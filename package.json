@@ -1,0 +1,39 @@
+{
+  "name": "connector-impact-preview",
+  "version": "0.1.0",
+  "description": "Preview affected targets, changed fields, evidence, rollback gaps, and risk before connector writes.",
+  "type": "module",
+  "bin": {
+    "connector-impact": "./dist/src/cli.js"
+  },
+  "exports": {
+    ".": "./dist/src/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "SKILL.md",
+    "docs"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "check": "tsc -p tsconfig.json --noEmit",
+    "test": "node --test dist/**/*.test.js",
+    "pretest": "npm run build",
+    "smoke": "npm run build && node dist/src/cli.js preview fixtures/crm-update.yaml --format markdown && node dist/src/cli.js preview fixtures/workspace-delete.yaml --format json"
+  },
+  "keywords": [
+    "connectors",
+    "approval",
+    "dry-run",
+    "agent-tools"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "yaml": "^2.8.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.8.0"
+  }
+}
