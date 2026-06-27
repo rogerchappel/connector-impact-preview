@@ -2,6 +2,14 @@
   "name": "connector-impact-preview",
   "version": "0.1.0",
   "description": "Preview affected targets, changed fields, evidence, rollback gaps, and risk before connector writes.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rogerchappel/connector-impact-preview.git"
+  },
+  "homepage": "https://github.com/rogerchappel/connector-impact-preview#readme",
+  "bugs": {
+    "url": "https://github.com/rogerchappel/connector-impact-preview/issues"
+  },
   "type": "module",
   "bin": {
     "connector-impact": "./dist/src/cli.js"
