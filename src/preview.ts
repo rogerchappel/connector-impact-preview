@@ -1,4 +1,4 @@
-import { redactValue } from "./redact.js";
+import { isSecretKey, redactValue } from "./redact.js";
 import type { ConnectorManifest, FieldChange, ImpactLevel, ImpactPreview } from "./types.js";
 
 const destructiveAction = /\b(delete|remove|archive|merge|close|deactivate|disable|overwrite|bulk)\b/i;
@@ -26,14 +26,18 @@ function diffFields(before: Record<string, unknown>, after: Record<string, unkno
   const fields = [...new Set([...Object.keys(before), ...Object.keys(after), ...Object.keys(payload)])].sort();
   return fields
     .filter((field) => JSON.stringify(before[field]) !== JSON.stringify(after[field]) || field in payload)
-    .map((field) => ({ field, before: before[field], after: field in after ? after[field] : payload[field] }));
+    .map((field) => ({
+      field,
+      before: isSecretKey(field) ? "[REDACTED]" : before[field],
+      after: isSecretKey(field) ? "[REDACTED]" : field in after ? after[field] : payload[field]
+    }));
 }
 
 function buildWarnings(manifest: ConnectorManifest, changedFields: FieldChange[]): string[] {
   const warnings: string[] = [];
   if (!manifest.evidence?.length) warnings.push("missing evidence");
   if (!manifest.rollback?.length) warnings.push("missing rollback notes");
-  if (destructiveAction.test(manifest.action)) warnings.push("destructive action");
+  if (destructiveAction.test(normalizeAction(manifest.action))) warnings.push("destructive action");
   if (broadTarget.test(summarizeTarget(manifest.target))) warnings.push("broad target");
   if (changedFields.length > 5) warnings.push("many changed fields");
   if (writeAction.test(manifest.action) && !manifest.payload && !manifest.after) warnings.push("write action without payload or after snapshot");
@@ -45,6 +49,10 @@ function classifyImpact(manifest: ConnectorManifest, changedFields: FieldChange[
   if (warnings.includes("missing rollback notes") || changedFields.length > 3) return "medium";
   if (warnings.includes("missing evidence")) return "medium";
   return "low";
+}
+
+function normalizeAction(action: string): string {
+  return action.replace(/[_-]/g, " ");
 }
 
 function summarizeTarget(target: ConnectorManifest["target"]): string {

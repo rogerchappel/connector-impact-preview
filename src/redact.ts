@@ -1,5 +1,9 @@
 const secretKeyPattern = /(token|secret|password|api[_-]?key|authorization|cookie|credential)/i;
 
+export function isSecretKey(key: string): boolean {
+  return secretKeyPattern.test(key);
+}
+
 export function redactValue(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(redactValue);
   if (value && typeof value === "object") {
