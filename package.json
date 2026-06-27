@@ -28,7 +28,8 @@
     "check": "tsc -p tsconfig.json --noEmit",
     "test": "node --test dist/**/*.test.js",
     "pretest": "npm run build",
-    "smoke": "npm run build && node dist/src/cli.js preview fixtures/crm-update.yaml --format markdown && node dist/src/cli.js preview fixtures/workspace-delete.yaml --format json"
+    "smoke": "npm run build && node dist/src/cli.js preview fixtures/crm-update.yaml --format markdown && printf '\\n' && node dist/src/cli.js preview fixtures/workspace-delete.yaml --format json",
+    "validate": "bash scripts/validate.sh"
   },
   "keywords": [
     "connectors",
