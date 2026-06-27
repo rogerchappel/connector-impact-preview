@@ -1,0 +1,10 @@
+connector: slack
+action: send_message
+target: "#launch-review"
+payload:
+  text: "Release candidate is ready for review."
+  password: "never-render"
+evidence:
+  - "PR is open and checks are green."
+rollback:
+  - "Post a correction in the thread."

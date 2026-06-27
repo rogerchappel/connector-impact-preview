@@ -1,0 +1,12 @@
+connector: project_management
+action: bulk_delete_tasks
+target: entire workspace
+payload:
+  query: "status=done"
+  credential: "pm-secret"
+before:
+  matchingTasks: 28
+after:
+  matchingTasks: 0
+evidence: []
+rollback: []

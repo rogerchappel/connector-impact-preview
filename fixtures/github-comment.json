@@ -1,0 +1,18 @@
+{
+  "connector": "github",
+  "action": "comment",
+  "target": {
+    "repo": "rogerchappel/example",
+    "issue": 42
+  },
+  "payload": {
+    "body": "Release candidate smoke passed.",
+    "token": "ghp_secret"
+  },
+  "evidence": [
+    "npm test passed locally"
+  ],
+  "rollback": [
+    "Delete or edit the comment if the evidence is wrong."
+  ]
+}

@@ -1,0 +1,17 @@
+connector: crm
+action: update_contact
+target:
+  type: contact
+  id: c_123
+payload:
+  stage: qualified
+  apiKey: should-not-render
+before:
+  stage: lead
+after:
+  stage: qualified
+evidence:
+  - "Call notes mention budget and project owner."
+  - "Email thread confirms requested follow-up."
+rollback:
+  - "Set stage back to lead if the qualification note is rejected."
