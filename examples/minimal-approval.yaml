@@ -1,0 +1,11 @@
+connector: github
+action: comment
+target:
+  repo: rogerchappel/example
+  issue: 7
+payload:
+  body: "Smoke passed on the release candidate."
+evidence:
+  - "npm test passed locally"
+rollback:
+  - "Edit or delete the comment if the evidence changes."
