@@ -57,6 +57,8 @@ npm run check
 npm test
 npm run build
 npm run smoke
+npm run package:smoke
+npm run release:check
 ```
 
 ## Limitations
