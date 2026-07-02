@@ -53,6 +53,7 @@ This tool is local-first and non-executing. It never calls connector APIs and ne
 ## Development
 
 ```bash
+npm run lint
 npm run check
 npm test
 npm run build
