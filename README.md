@@ -55,6 +55,7 @@ This tool is local-first and non-executing. It never calls connector APIs and ne
 ```bash
 npm run lint
 npm run check
+npm run lint
 npm test
 npm run build
 npm run smoke
