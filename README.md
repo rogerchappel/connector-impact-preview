@@ -68,3 +68,14 @@ npm run release:check
 - Risk scoring is intentionally conservative and deterministic.
 - Manifests are not executable plans.
 - Organization-specific policy enforcement is out of scope for V1.
+## Development checks
+
+Run the same local gates that CI runs before opening a PR:
+
+```bash
+npm run check --if-present
+npm run build --if-present
+npm test --if-present
+npm run smoke --if-present
+```
+
