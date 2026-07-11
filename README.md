@@ -7,6 +7,7 @@ Turn a proposed connector action into a local, reviewable impact summary before 
 ```bash
 npm install
 npm run build
+node dist/src/cli.js --help
 node dist/src/cli.js preview fixtures/crm-update.yaml --format markdown
 ```
 
@@ -78,4 +79,3 @@ npm run build --if-present
 npm test --if-present
 npm run smoke --if-present
 ```
-
