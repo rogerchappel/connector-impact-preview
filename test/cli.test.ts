@@ -6,6 +6,13 @@ import { promisify } from "node:util";
 const run = promisify(execFile);
 
 describe("cli", () => {
+  it("prints usage for --help", async () => {
+    const { stdout, stderr } = await run("node", ["dist/src/cli.js", "--help"]);
+
+    assert.match(stdout, /Usage: connector-impact preview/);
+    assert.equal(stderr, "");
+  });
+
   it("renders redacted json from a fixture manifest", async () => {
     const { stdout } = await run("node", ["dist/src/cli.js", "preview", "fixtures/github-comment.json", "--format", "json"]);
     assert.match(stdout, /\[REDACTED\]/);
