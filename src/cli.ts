@@ -9,12 +9,17 @@ interface Args {
   manifest?: string;
   format: OutputFormat;
   out?: string;
+  help?: boolean;
 }
 
 async function main(): Promise<void> {
   const args = parseArgs(process.argv.slice(2));
+  if (args.help) {
+    usage(process.stdout);
+    return;
+  }
   if (args.command !== "preview" || !args.manifest) {
-    usage();
+    usage(process.stderr);
     process.exitCode = 2;
     return;
   }
@@ -27,6 +32,7 @@ async function main(): Promise<void> {
 
 function parseArgs(argv: string[]): Args {
   const args: Args = { command: argv[0], manifest: argv[1], format: "markdown" };
+  if (argv.includes("--help") || argv.includes("-h") || argv[0] === "help") args.help = true;
   for (let index = 2; index < argv.length; index += 1) {
     const value = argv[index];
     if (value === "--format") args.format = parseFormat(argv[++index]);
@@ -40,8 +46,8 @@ function parseFormat(value: string | undefined): OutputFormat {
   throw new Error(`Unsupported format: ${value ?? ""}`);
 }
 
-function usage(): void {
-  process.stderr.write("Usage: connector-impact preview <manifest.json|yaml> [--format markdown|json] [--out file]\n");
+function usage(stream: NodeJS.WriteStream): void {
+  stream.write("Usage: connector-impact preview <manifest.json|yaml> [--format markdown|json] [--out file]\n");
 }
 
 main().catch((error: unknown) => {
