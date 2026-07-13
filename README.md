@@ -47,6 +47,19 @@ rollback:
 - evidence and rollback notes
 - warnings for broad targets, destructive actions, missing evidence, and missing rollback notes
 
+## Verification
+
+Run the same checks used for release-readiness before publishing or opening a release PR:
+
+```bash
+npm run check
+npm test
+npm run build
+npm run smoke
+npm run release:check
+npm pack --dry-run
+```
+
 ## Safety Notes
 
 This tool is local-first and non-executing. It never calls connector APIs and never performs the proposed action. Secret-like keys such as `token`, `password`, `apiKey`, `authorization`, and `credential` are redacted from rendered output.
