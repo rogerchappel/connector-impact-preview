@@ -60,35 +60,14 @@ npm run release:check
 npm pack --dry-run
 ```
 
+CI runs `npm run release:check` on pull requests and pushes to `main`, including the package smoke that verifies built files and pack contents.
+
 ## Safety Notes
 
 This tool is local-first and non-executing. It never calls connector APIs and never performs the proposed action. Secret-like keys such as `token`, `password`, `apiKey`, `authorization`, and `credential` are redacted from rendered output.
-
-## Development
-
-```bash
-npm run lint
-npm run check
-npm run lint
-npm test
-npm run build
-npm run smoke
-npm run package:smoke
-npm run release:check
-```
 
 ## Limitations
 
 - Risk scoring is intentionally conservative and deterministic.
 - Manifests are not executable plans.
 - Organization-specific policy enforcement is out of scope for V1.
-## Development checks
-
-Run the same local gates that CI runs before opening a PR:
-
-```bash
-npm run check --if-present
-npm run build --if-present
-npm test --if-present
-npm run smoke --if-present
-```
