@@ -28,7 +28,7 @@
     "smoke": "npm run build && node dist/src/cli.js preview fixtures/crm-update.yaml --format markdown && node dist/src/cli.js preview fixtures/workspace-delete.yaml --format json",
     "validate": "bash scripts/validate.sh",
     "package:smoke": "npm run build && node scripts/package-smoke.mjs",
-    "release:check": "npm run lint && npm test && npm run smoke && npm run package:smoke"
+    "release:check": "npm run validate && npm run package:smoke"
   },
   "keywords": [
     "connectors",
