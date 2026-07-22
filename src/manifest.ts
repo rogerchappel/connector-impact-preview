@@ -21,12 +21,16 @@ function validateManifest(value: unknown): ConnectorManifest {
     connector: String(manifest.connector),
     action: String(manifest.action),
     target: manifest.target as ConnectorManifest["target"],
-    payload: objectOrEmpty(manifest.payload),
-    before: objectOrEmpty(manifest.before),
-    after: objectOrEmpty(manifest.after),
+    payload: optionalObject(manifest.payload),
+    before: optionalObject(manifest.before),
+    after: optionalObject(manifest.after),
     evidence: arrayOrEmpty(manifest.evidence),
     rollback: arrayOrEmpty(manifest.rollback)
   };
+}
+
+function optionalObject(value: unknown): Record<string, unknown> | undefined {
+  return value === undefined ? undefined : objectOrEmpty(value);
 }
 
 function objectOrEmpty(value: unknown): Record<string, unknown> {

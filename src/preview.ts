@@ -40,13 +40,13 @@ function buildWarnings(manifest: ConnectorManifest, changedFields: FieldChange[]
   if (destructiveAction.test(normalizeAction(manifest.action))) warnings.push("destructive action");
   if (broadTarget.test(summarizeTarget(manifest.target))) warnings.push("broad target");
   if (changedFields.length > 5) warnings.push("many changed fields");
-  if (writeAction.test(manifest.action) && !manifest.payload && !manifest.after) warnings.push("write action without payload or after snapshot");
+  if (writeAction.test(normalizeAction(manifest.action)) && !manifest.payload && !manifest.after) warnings.push("write action without payload or after snapshot");
   return warnings;
 }
 
 function classifyImpact(manifest: ConnectorManifest, changedFields: FieldChange[], warnings: string[]): ImpactLevel {
   if (warnings.includes("destructive action") || warnings.includes("broad target")) return "high";
-  if (warnings.includes("missing rollback notes") || changedFields.length > 3) return "medium";
+  if (warnings.includes("missing rollback notes") || warnings.includes("write action without payload or after snapshot") || changedFields.length > 3) return "medium";
   if (warnings.includes("missing evidence")) return "medium";
   return "low";
 }

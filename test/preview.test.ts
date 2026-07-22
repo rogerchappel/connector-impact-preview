@@ -23,6 +23,28 @@ describe("connector impact preview", () => {
     assert.ok(preview.warnings.includes("missing rollback notes"));
   });
 
+  it("warns when a loaded write action omits both payload and after", async () => {
+    const manifest = await loadManifest(fixture("missing-write-data.yaml"));
+    const preview = previewManifest(manifest);
+
+    assert.equal(manifest.payload, undefined);
+    assert.equal(manifest.after, undefined);
+    assert.equal(preview.impact, "medium");
+    assert.deepEqual(preview.changedFields, []);
+    assert.ok(preview.warnings.includes("write action without payload or after snapshot"));
+  });
+
+  it("distinguishes explicitly empty payload and after from omitted fields", async () => {
+    const manifest = await loadManifest(fixture("empty-write-data.yaml"));
+    const preview = previewManifest(manifest);
+
+    assert.deepEqual(manifest.payload, {});
+    assert.deepEqual(manifest.after, {});
+    assert.equal(preview.impact, "low");
+    assert.deepEqual(preview.changedFields, []);
+    assert.ok(!preview.warnings.includes("write action without payload or after snapshot"));
+  });
+
   it("redacts secret-like keys in json output", async () => {
     const manifest = await loadManifest(fixture("github-comment.json"));
     const preview = previewManifest(manifest);
