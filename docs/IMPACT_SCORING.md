@@ -8,7 +8,7 @@ Narrow target, non-destructive action, evidence present, rollback notes present,
 
 ## Medium
 
-Missing evidence, missing rollback notes, or more than three changed fields.
+Missing evidence, missing rollback notes, a write action without a payload or after snapshot, or more than three changed fields.
 
 ## High
 

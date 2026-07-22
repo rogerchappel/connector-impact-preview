@@ -1,0 +1,9 @@
+connector: crm
+action: update_contact
+target:
+  type: contact
+  id: c_456
+evidence:
+  - "The contact requested an update."
+rollback:
+  - "Restore the previous contact values."
