@@ -19,4 +19,28 @@ describe("cli", () => {
     assert.doesNotMatch(stdout, /ghp_secret/);
     assert.equal(JSON.parse(stdout).execution, "out-of-scope");
   });
+
+  it("rejects unknown options", async () => {
+    await assert.rejects(
+      run("node", ["dist/src/cli.js", "preview", "fixtures/crm-update.yaml", "--bogus"]),
+      (error: { code: number; stderr: string }) => {
+        assert.equal(error.code, 1);
+        assert.equal(error.stderr, "Unknown option: --bogus\n");
+        return true;
+      }
+    );
+  });
+
+  for (const option of ["--format", "--out"]) {
+    it(`rejects a missing ${option} value`, async () => {
+      await assert.rejects(
+        run("node", ["dist/src/cli.js", "preview", "fixtures/crm-update.yaml", option]),
+        (error: { code: number; stderr: string }) => {
+          assert.equal(error.code, 1);
+          assert.equal(error.stderr, `Missing value for option: ${option}\n`);
+          return true;
+        }
+      );
+    });
+  }
 });

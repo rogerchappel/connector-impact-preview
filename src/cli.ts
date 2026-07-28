@@ -35,10 +35,17 @@ function parseArgs(argv: string[]): Args {
   if (argv.includes("--help") || argv.includes("-h") || argv[0] === "help") args.help = true;
   for (let index = 2; index < argv.length; index += 1) {
     const value = argv[index];
-    if (value === "--format") args.format = parseFormat(argv[++index]);
-    else if (value === "--out") args.out = argv[++index];
+    if (value === "--format") args.format = parseFormat(optionValue(argv, ++index, value));
+    else if (value === "--out") args.out = optionValue(argv, ++index, value);
+    else throw new Error(`Unknown option: ${value}`);
   }
   return args;
+}
+
+function optionValue(argv: string[], index: number, option: string): string {
+  const value = argv[index];
+  if (!value || value.startsWith("--")) throw new Error(`Missing value for option: ${option}`);
+  return value;
 }
 
 function parseFormat(value: string | undefined): OutputFormat {
