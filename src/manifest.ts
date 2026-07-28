@@ -21,22 +21,26 @@ function validateManifest(value: unknown): ConnectorManifest {
     connector: String(manifest.connector),
     action: String(manifest.action),
     target: manifest.target as ConnectorManifest["target"],
-    payload: optionalObject(manifest.payload),
-    before: optionalObject(manifest.before),
-    after: optionalObject(manifest.after),
-    evidence: arrayOrEmpty(manifest.evidence),
-    rollback: arrayOrEmpty(manifest.rollback)
+    payload: optionalObject(manifest.payload, "payload"),
+    before: optionalObject(manifest.before, "before"),
+    after: optionalObject(manifest.after, "after"),
+    evidence: optionalArray(manifest.evidence, "evidence"),
+    rollback: optionalArray(manifest.rollback, "rollback")
   };
 }
 
-function optionalObject(value: unknown): Record<string, unknown> | undefined {
-  return value === undefined ? undefined : objectOrEmpty(value);
+function optionalObject(value: unknown, field: string): Record<string, unknown> | undefined {
+  if (value === undefined) return undefined;
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error(`Manifest field "${field}" must be an object`);
+  }
+  return value as Record<string, unknown>;
 }
 
-function objectOrEmpty(value: unknown): Record<string, unknown> {
-  return value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : {};
-}
-
-function arrayOrEmpty(value: unknown): string[] {
-  return Array.isArray(value) ? value.map(String) : [];
+function optionalArray(value: unknown, field: string): string[] {
+  if (value === undefined) return [];
+  if (!Array.isArray(value)) {
+    throw new Error(`Manifest field "${field}" must be an array`);
+  }
+  return value.map(String);
 }

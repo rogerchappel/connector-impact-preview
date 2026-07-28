@@ -1,4 +1,7 @@
 import assert from "node:assert/strict";
+import { mkdtemp, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { describe, it } from "node:test";
 
 import { loadManifest, previewManifest, renderJson, renderMarkdown } from "../src/index.js";
@@ -60,4 +63,25 @@ describe("connector impact preview", () => {
     assert.match(markdown, /Execution: `out-of-scope`/);
     assert.match(markdown, /\[REDACTED\]/);
   });
+
+  for (const [field, value, shape] of [
+    ["payload", "not-an-object", "object"],
+    ["before", ["not", "an", "object"], "object"],
+    ["after", null, "object"],
+    ["evidence", "not-an-array", "array"],
+    ["rollback", { step: "undo" }, "array"]
+  ] as const) {
+    it(`rejects malformed ${field}`, async () => {
+      const directory = await mkdtemp(join(tmpdir(), "connector-impact-manifest-"));
+      const path = join(directory, `${field}.json`);
+      await writeFile(path, JSON.stringify({
+        connector: "crm",
+        action: "update",
+        target: "c1",
+        [field]: value
+      }));
+
+      await assert.rejects(loadManifest(path), new Error(`Manifest field "${field}" must be an ${shape}`));
+    });
+  }
 });
