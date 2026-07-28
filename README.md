@@ -37,6 +37,13 @@ rollback:
   - "Set stage back to lead if rejected."
 ```
 
+`payload`, `before`, and `after` are optional objects. `evidence` and `rollback`
+are optional arrays. When present, each field must use that shape; malformed
+fields are rejected instead of being discarded.
+
+The CLI exits nonzero with a concise error for unknown options, unsupported
+formats, or options missing their values.
+
 ## What It Reports
 
 - connector and action

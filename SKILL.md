@@ -4,7 +4,7 @@ Use this skill when an agent has drafted a connector action and needs a local im
 
 ## Required Inputs
 
-- A JSON or YAML manifest with `connector`, `action`, `target`, `payload`, optional `before`, optional `after`, `evidence`, and `rollback`.
+- A JSON or YAML manifest with `connector`, `action`, and `target`. Optional `payload`, `before`, and `after` values must be objects; optional `evidence` and `rollback` values must be arrays.
 
 ## Side-effect Boundaries
 
@@ -23,6 +23,9 @@ No approval is needed to preview a local manifest. Executing the connector actio
 connector-impact preview fixtures/crm-update.yaml --format markdown
 connector-impact preview fixtures/github-comment.json --format json --out tmp/impact.json
 ```
+
+Unknown options, unsupported formats, and options without values exit nonzero
+with a concise error.
 
 ## Validation
 
