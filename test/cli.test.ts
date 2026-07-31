@@ -20,6 +20,15 @@ describe("cli", () => {
     assert.equal(JSON.parse(stdout).execution, "out-of-scope");
   });
 
+  for (const format of ["markdown", "json"]) {
+    it(`redacts nested target secrets from ${format} output`, async () => {
+      const { stdout } = await run("node", ["dist/src/cli.js", "preview", "fixtures/secret-target.yaml", "--format", format]);
+
+      assert.match(stdout, /\[REDACTED\]/);
+      assert.doesNotMatch(stdout, /synthetic_target_key|synthetic_nested_authorization|synthetic_array_credential/);
+    });
+  }
+
   it("rejects unknown options", async () => {
     await assert.rejects(
       run("node", ["dist/src/cli.js", "preview", "fixtures/crm-update.yaml", "--bogus"]),

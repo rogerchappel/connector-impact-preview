@@ -56,6 +56,36 @@ describe("connector impact preview", () => {
     assert.doesNotMatch(rendered, /ghp_secret/);
   });
 
+  it("redacts nested secret-like keys from target summaries in every renderer", () => {
+    const preview = previewManifest({
+      connector: "crm",
+      action: "update",
+      target: {
+        type: "contact",
+        apiKey: "synthetic_target_key",
+        routing: {
+          authorization: "synthetic_nested_authorization",
+          regions: ["apac", { credential: "synthetic_array_credential", scope: "team" }]
+        }
+      },
+      payload: { stage: "qualified" },
+      evidence: ["Synthetic fixture"],
+      rollback: ["Restore the prior stage"]
+    });
+
+    assert.equal(
+      preview.targetSummary,
+      'type=contact, apiKey=[REDACTED], routing={"authorization":"[REDACTED]","regions":["apac",{"credential":"[REDACTED]","scope":"team"}]}'
+    );
+    assert.equal(preview.impact, "high");
+    assert.ok(preview.warnings.includes("broad target"));
+
+    for (const rendered of [renderMarkdown(preview), renderJson(preview)]) {
+      assert.match(rendered, /\[REDACTED\]/);
+      assert.doesNotMatch(rendered, /synthetic_target_key|synthetic_nested_authorization|synthetic_array_credential/);
+    }
+  });
+
   it("renders markdown approval evidence", async () => {
     const manifest = await loadManifest(fixture("slack-message.yaml"));
     const markdown = renderMarkdown(previewManifest(manifest));
