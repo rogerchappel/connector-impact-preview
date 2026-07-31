@@ -71,7 +71,7 @@ CI runs `npm run release:check` on pull requests and pushes to `main`, including
 
 ## Safety Notes
 
-This tool is local-first and non-executing. It never calls connector APIs and never performs the proposed action. Secret-like keys such as `token`, `password`, `apiKey`, `authorization`, and `credential` are redacted from rendered output.
+This tool is local-first and non-executing. It never calls connector APIs and never performs the proposed action. Secret-like keys such as `token`, `password`, `apiKey`, `authorization`, and `credential` are redacted from rendered output, including keys nested inside target objects and arrays.
 
 ## Limitations
 
