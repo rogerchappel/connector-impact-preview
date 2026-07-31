@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+- Redact secret-like keys recursively before rendering or classifying target summaries.
 - Run the canonical release-readiness gate in CI so package smoke coverage is checked on pull requests.
 - Add release-readiness checks for package metadata, pack contents, and CI verification.
 
