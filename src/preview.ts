@@ -56,7 +56,14 @@ function normalizeAction(action: string): string {
 }
 
 function summarizeTarget(target: ConnectorManifest["target"]): string {
-  if (Array.isArray(target)) return target.join(", ");
-  if (target && typeof target === "object") return Object.entries(target).map(([key, value]) => `${key}=${String(value)}`).join(", ");
-  return String(target);
+  const redacted = redactValue(target) as ConnectorManifest["target"];
+  if (Array.isArray(redacted)) return redacted.map(formatTargetValue).join(", ");
+  if (redacted && typeof redacted === "object") {
+    return Object.entries(redacted).map(([key, value]) => `${key}=${formatTargetValue(value)}`).join(", ");
+  }
+  return String(redacted);
+}
+
+function formatTargetValue(value: unknown): string {
+  return value && typeof value === "object" ? JSON.stringify(value) : String(value);
 }
