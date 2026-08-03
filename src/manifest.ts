@@ -14,13 +14,10 @@ export async function loadManifest(path: string): Promise<ConnectorManifest> {
 function validateManifest(value: unknown): ConnectorManifest {
   if (!value || typeof value !== "object") throw new Error("Manifest must be an object");
   const manifest = value as Partial<ConnectorManifest>;
-  for (const key of ["connector", "action", "target"] as const) {
-    if (!manifest[key]) throw new Error(`Manifest missing required field: ${key}`);
-  }
   return {
-    connector: String(manifest.connector),
-    action: String(manifest.action),
-    target: manifest.target as ConnectorManifest["target"],
+    connector: requiredString(manifest.connector, "connector"),
+    action: requiredString(manifest.action, "action"),
+    target: requiredTarget(manifest.target),
     payload: optionalObject(manifest.payload, "payload"),
     before: optionalObject(manifest.before, "before"),
     after: optionalObject(manifest.after, "after"),
@@ -42,5 +39,21 @@ function optionalArray(value: unknown, field: string): string[] {
   if (!Array.isArray(value)) {
     throw new Error(`Manifest field "${field}" must be an array`);
   }
-  return value.map(String);
+  return value.map((item, index) => requiredString(item, `${field}[${index}]`));
+}
+
+function requiredString(value: unknown, field: string): string {
+  if (typeof value !== "string" || value.length === 0) {
+    throw new Error(`Manifest field "${field}" must be a non-empty string`);
+  }
+  return value;
+}
+
+function requiredTarget(value: unknown): ConnectorManifest["target"] {
+  if (typeof value === "string") return requiredString(value, "target");
+  if (Array.isArray(value)) {
+    return value.map((item, index) => requiredString(item, `target[${index}]`));
+  }
+  if (value && typeof value === "object") return value as Record<string, unknown>;
+  throw new Error('Manifest field "target" must be a non-empty string, an array of non-empty strings, or an object');
 }
