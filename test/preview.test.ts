@@ -114,4 +114,33 @@ describe("connector impact preview", () => {
       await assert.rejects(loadManifest(path), new Error(`Manifest field "${field}" must be an ${shape}`));
     });
   }
+
+  for (const [field, value, message] of [
+    ["connector", {}, 'Manifest field "connector" must be a non-empty string'],
+    ["connector", "", 'Manifest field "connector" must be a non-empty string'],
+    ["action", [], 'Manifest field "action" must be a non-empty string'],
+    ["action", null, 'Manifest field "action" must be a non-empty string'],
+    ["target", 42, 'Manifest field "target" must be a non-empty string, an array of non-empty strings, or an object'],
+    ["target", false, 'Manifest field "target" must be a non-empty string, an array of non-empty strings, or an object'],
+    ["target", "", 'Manifest field "target" must be a non-empty string, an array of non-empty strings, or an object'],
+    ["target", ["c1", 2], 'Manifest field "target[1]" must be a non-empty string'],
+    ["target", [""], 'Manifest field "target[0]" must be a non-empty string'],
+    ["evidence", [null], 'Manifest field "evidence[0]" must be a non-empty string'],
+    ["evidence", [true], 'Manifest field "evidence[0]" must be a non-empty string'],
+    ["rollback", [{}], 'Manifest field "rollback[0]" must be a non-empty string'],
+    ["rollback", [""], 'Manifest field "rollback[0]" must be a non-empty string']
+  ] as const) {
+    it(`rejects invalid ${field} value ${JSON.stringify(value)}`, async () => {
+      const directory = await mkdtemp(join(tmpdir(), "connector-impact-manifest-"));
+      const path = join(directory, `${field}.json`);
+      await writeFile(path, JSON.stringify({
+        connector: "crm",
+        action: "update",
+        target: "c1",
+        [field]: value
+      }));
+
+      await assert.rejects(loadManifest(path), new Error(message));
+    });
+  }
 });

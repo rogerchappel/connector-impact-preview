@@ -1,5 +1,8 @@
 import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
+import { mkdtemp, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { describe, it } from "node:test";
 import { promisify } from "node:util";
 
@@ -35,6 +38,22 @@ describe("cli", () => {
       (error: { code: number; stderr: string }) => {
         assert.equal(error.code, 1);
         assert.equal(error.stderr, "Unknown option: --bogus\n");
+        return true;
+      }
+    );
+  });
+
+  it("rejects malformed manifest fields without rendering a preview", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "connector-impact-cli-"));
+    const path = join(directory, "invalid.json");
+    await writeFile(path, JSON.stringify({ connector: {}, action: "update", target: "c1" }));
+
+    await assert.rejects(
+      run("node", ["dist/src/cli.js", "preview", path]),
+      (error: { code: number; stdout: string; stderr: string }) => {
+        assert.equal(error.code, 1);
+        assert.equal(error.stdout, "");
+        assert.equal(error.stderr, 'Manifest field "connector" must be a non-empty string\n');
         return true;
       }
     );
