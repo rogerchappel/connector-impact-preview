@@ -37,9 +37,11 @@ rollback:
   - "Set stage back to lead if rejected."
 ```
 
-`payload`, `before`, and `after` are optional objects. `evidence` and `rollback`
-are optional arrays. When present, each field must use that shape; malformed
-fields are rejected instead of being discarded.
+`connector` and `action` are non-empty strings. `target` is a non-empty string,
+an array of non-empty strings, or an object. `payload`, `before`, and `after`
+are optional objects. `evidence` and `rollback` are optional arrays of non-empty
+strings; use an empty array when there are no notes. Malformed fields are
+rejected instead of being coerced or discarded.
 
 The CLI exits nonzero with a concise error for unknown options, unsupported
 formats, or options missing their values.
