@@ -59,6 +59,35 @@ describe("cli", () => {
     );
   });
 
+  for (const [field, value, expectedField] of [
+    ["connector", "   ", "connector"],
+    ["action", "\t", "action"],
+    ["target", " \n ", "target"],
+    ["evidence", ["  "], "evidence[0]"],
+    ["rollback", ["\t"], "rollback[0]"]
+  ] as const) {
+    it(`rejects whitespace-only ${field} strings with a field-specific error`, async () => {
+      const directory = await mkdtemp(join(tmpdir(), "connector-impact-cli-"));
+      const path = join(directory, `${field}.json`);
+      await writeFile(path, JSON.stringify({
+        connector: "crm",
+        action: "update",
+        target: "c1",
+        [field]: value
+      }));
+
+      await assert.rejects(
+        run("node", ["dist/src/cli.js", "preview", path]),
+        (error: { code: number; stdout: string; stderr: string }) => {
+          assert.equal(error.code, 1);
+          assert.equal(error.stdout, "");
+          assert.equal(error.stderr, `Manifest field "${expectedField}" must be a non-empty string\n`);
+          return true;
+        }
+      );
+    });
+  }
+
   for (const option of ["--format", "--out"]) {
     it(`rejects a missing ${option} value`, async () => {
       await assert.rejects(

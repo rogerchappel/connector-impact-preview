@@ -52,7 +52,9 @@ function classifyImpact(manifest: ConnectorManifest, changedFields: FieldChange[
 }
 
 function normalizeAction(action: string): string {
-  return action.replace(/[_-]/g, " ");
+  return action
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/[_-]+/g, " ");
 }
 
 function summarizeTarget(target: ConnectorManifest["target"]): string {

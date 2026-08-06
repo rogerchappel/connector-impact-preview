@@ -37,6 +37,36 @@ describe("connector impact preview", () => {
     assert.ok(preview.warnings.includes("write action without payload or after snapshot"));
   });
 
+  for (const action of ["update_contact", "update-contact", "update contact", "updateContact"]) {
+    it(`recognizes ${action} as a write action`, () => {
+      const preview = previewManifest({
+        connector: "crm",
+        action,
+        target: "contact-1",
+        evidence: ["Confirmed request"],
+        rollback: ["Restore the previous contact"]
+      });
+
+      assert.equal(preview.impact, "medium");
+      assert.ok(preview.warnings.includes("write action without payload or after snapshot"));
+    });
+  }
+
+  for (const action of ["delete_contact", "delete-contact", "delete contact", "deleteContact"]) {
+    it(`recognizes ${action} as a destructive action`, () => {
+      const preview = previewManifest({
+        connector: "crm",
+        action,
+        target: "contact-1",
+        evidence: ["Confirmed request"],
+        rollback: ["Restore the deleted contact"]
+      });
+
+      assert.equal(preview.impact, "high");
+      assert.ok(preview.warnings.includes("destructive action"));
+    });
+  }
+
   it("distinguishes explicitly empty payload and after from omitted fields", async () => {
     const manifest = await loadManifest(fixture("empty-write-data.yaml"));
     const preview = previewManifest(manifest);
@@ -118,17 +148,22 @@ describe("connector impact preview", () => {
   for (const [field, value, message] of [
     ["connector", {}, 'Manifest field "connector" must be a non-empty string'],
     ["connector", "", 'Manifest field "connector" must be a non-empty string'],
+    ["connector", "   ", 'Manifest field "connector" must be a non-empty string'],
     ["action", [], 'Manifest field "action" must be a non-empty string'],
     ["action", null, 'Manifest field "action" must be a non-empty string'],
+    ["action", "\t", 'Manifest field "action" must be a non-empty string'],
     ["target", 42, 'Manifest field "target" must be a non-empty string, an array of non-empty strings, or an object'],
     ["target", false, 'Manifest field "target" must be a non-empty string, an array of non-empty strings, or an object'],
     ["target", "", 'Manifest field "target" must be a non-empty string'],
+    ["target", " \n ", 'Manifest field "target" must be a non-empty string'],
     ["target", ["c1", 2], 'Manifest field "target[1]" must be a non-empty string'],
     ["target", [""], 'Manifest field "target[0]" must be a non-empty string'],
     ["evidence", [null], 'Manifest field "evidence[0]" must be a non-empty string'],
     ["evidence", [true], 'Manifest field "evidence[0]" must be a non-empty string'],
+    ["evidence", ["  "], 'Manifest field "evidence[0]" must be a non-empty string'],
     ["rollback", [{}], 'Manifest field "rollback[0]" must be a non-empty string'],
-    ["rollback", [""], 'Manifest field "rollback[0]" must be a non-empty string']
+    ["rollback", [""], 'Manifest field "rollback[0]" must be a non-empty string'],
+    ["rollback", ["\t"], 'Manifest field "rollback[0]" must be a non-empty string']
   ] as const) {
     it(`rejects invalid ${field} value ${JSON.stringify(value)}`, async () => {
       const directory = await mkdtemp(join(tmpdir(), "connector-impact-manifest-"));
