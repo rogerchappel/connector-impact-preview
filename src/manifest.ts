@@ -43,7 +43,7 @@ function optionalArray(value: unknown, field: string): string[] {
 }
 
 function requiredString(value: unknown, field: string): string {
-  if (typeof value !== "string" || value.length === 0) {
+  if (typeof value !== "string" || value.trim().length === 0) {
     throw new Error(`Manifest field "${field}" must be a non-empty string`);
   }
   return value;
