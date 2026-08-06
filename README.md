@@ -43,6 +43,10 @@ are optional objects. `evidence` and `rollback` are optional arrays of non-empty
 strings; use an empty array when there are no notes. Malformed fields are
 rejected instead of being coerced or discarded.
 
+Action classification accepts verb names written with snake case, kebab case,
+spaces, or camel case (for example, `update_contact`, `update-contact`,
+`update contact`, and `updateContact`).
+
 The CLI exits nonzero with a concise error for unknown options, unsupported
 formats, or options missing their values.
 
