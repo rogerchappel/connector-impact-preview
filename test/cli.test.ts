@@ -23,6 +23,25 @@ describe("cli", () => {
     assert.equal(JSON.parse(stdout).execution, "out-of-scope");
   });
 
+  it("normalizes markdown structure characters from a manifest", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "connector-impact-cli-"));
+    const path = join(directory, "markdown.json");
+    await writeFile(path, JSON.stringify({
+      connector: "crm`\n## Injected",
+      action: "update\n- injected item",
+      target: "contact-1",
+      evidence: ["proof\n```\n## outside payload"],
+      rollback: ["undo *everything*"]
+    }));
+
+    const { stdout } = await run("node", ["dist/src/cli.js", "preview", path, "--format", "markdown"]);
+
+    assert.equal(stdout.match(/^## /gm)?.length, 5);
+    assert.equal(stdout.match(/^```/gm)?.length, 2);
+    assert.doesNotMatch(stdout, /^## Injected$|^- injected item/m);
+    assert.match(stdout, /crm\\` \\#\\# Injected/);
+  });
+
   for (const format of ["markdown", "json"]) {
     it(`redacts nested target secrets from ${format} output`, async () => {
       const { stdout } = await run("node", ["dist/src/cli.js", "preview", "fixtures/secret-target.yaml", "--format", format]);

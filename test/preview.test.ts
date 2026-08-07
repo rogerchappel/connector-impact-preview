@@ -124,6 +124,40 @@ describe("connector impact preview", () => {
     assert.match(markdown, /\[REDACTED\]/);
   });
 
+  it("keeps manifest-controlled markdown inside the preview hierarchy", () => {
+    const injected = "line`\n## Injected\n- item *bold* [link](url)";
+    const preview = previewManifest({
+      connector: injected,
+      action: injected,
+      target: injected,
+      before: { [injected]: injected },
+      after: { [injected]: `${injected} changed` },
+      payload: { note: "```\n## Payload heading" },
+      evidence: [injected],
+      rollback: [injected]
+    });
+    preview.warnings.push(injected);
+
+    const markdown = renderMarkdown(preview);
+
+    assert.equal(markdown.match(/^## /gm)?.length, 5);
+    assert.equal(markdown.match(/^```/gm)?.length, 2);
+    assert.doesNotMatch(markdown, /^## Injected$/m);
+    assert.doesNotMatch(markdown, /^- item/m);
+    assert.match(markdown, /line\\` \\#\\# Injected \\- item \\\*bold\\\*/);
+  });
+
+  it("does not normalize JSON output", () => {
+    const connector = "crm`\n## Kept in JSON";
+    const json = renderJson(previewManifest({
+      connector,
+      action: "update",
+      target: "contact-1"
+    }));
+
+    assert.equal(JSON.parse(json).connector, connector);
+  });
+
   for (const [field, value, shape] of [
     ["payload", "not-an-object", "object"],
     ["before", ["not", "an", "object"], "object"],
