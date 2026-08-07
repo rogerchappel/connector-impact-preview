@@ -50,6 +50,11 @@ spaces, or camel case (for example, `update_contact`, `update-contact`,
 The CLI exits nonzero with a concise error for unknown options, unsupported
 formats, or options missing their values.
 
+Markdown output keeps manifest-controlled text on one line and escapes Markdown
+punctuation so values cannot introduce headings, lists, links, emphasis, or code
+spans. JSON output preserves the original string values (subject to secret
+redaction).
+
 ## What It Reports
 
 - connector and action
