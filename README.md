@@ -47,8 +47,20 @@ Action classification accepts verb names written with snake case, kebab case,
 spaces, or camel case (for example, `update_contact`, `update-contact`,
 `update contact`, and `updateContact`).
 
-The CLI exits nonzero with a concise error for unknown options, unsupported
-formats, or options missing their values.
+The CLI grammar is:
+
+```text
+connector-impact preview <manifest.json|yaml> [--format markdown|json] [--out file]
+connector-impact --help
+connector-impact -h
+connector-impact help
+```
+
+Help forms must be used on their own. The CLI exits nonzero with a concise
+error for combined help and preview arguments, extra positional arguments,
+unknown long or short options, unsupported formats, or options missing their
+values. A flag is never accepted as an option value. Invalid commands are
+fully parsed before a manifest is loaded or an output file is written.
 
 Markdown output keeps manifest-controlled text on one line and escapes Markdown
 punctuation so values cannot introduce headings, lists, links, emphasis, or code

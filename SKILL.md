@@ -25,7 +25,10 @@ connector-impact preview fixtures/github-comment.json --format json --out tmp/im
 ```
 
 Unknown options, unsupported formats, and options without values exit nonzero
-with a concise error.
+with a concise error. `--help`, `-h`, and `help` are standalone forms and cannot
+be combined with a command, manifest, or options. Extra positional arguments,
+unknown short options, and flags supplied as option values are also rejected
+before any output file is written.
 
 ## Validation
 
