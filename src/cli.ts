@@ -31,20 +31,28 @@ async function main(): Promise<void> {
 }
 
 function parseArgs(argv: string[]): Args {
+  const helpForms = new Set(["help", "--help", "-h"]);
+  if (argv.length === 1 && helpForms.has(argv[0])) {
+    return { format: "markdown", help: true };
+  }
+  if (argv.some((value, index) => helpForms.has(value) && !["--format", "--out"].includes(argv[index - 1]))) {
+    throw new Error("Help must be used on its own");
+  }
+
   const args: Args = { command: argv[0], manifest: argv[1], format: "markdown" };
-  if (argv.includes("--help") || argv.includes("-h") || argv[0] === "help") args.help = true;
   for (let index = 2; index < argv.length; index += 1) {
     const value = argv[index];
     if (value === "--format") args.format = parseFormat(optionValue(argv, ++index, value));
     else if (value === "--out") args.out = optionValue(argv, ++index, value);
-    else throw new Error(`Unknown option: ${value}`);
+    else if (value.startsWith("-")) throw new Error(`Unknown option: ${value}`);
+    else throw new Error(`Unexpected argument: ${value}`);
   }
   return args;
 }
 
 function optionValue(argv: string[], index: number, option: string): string {
   const value = argv[index];
-  if (!value || value.startsWith("--")) throw new Error(`Missing value for option: ${option}`);
+  if (!value || value.startsWith("-")) throw new Error(`Missing value for option: ${option}`);
   return value;
 }
 
