@@ -156,6 +156,24 @@ describe("cli", () => {
     );
   });
 
+  for (const format of ["markdown", "json"] as const) {
+    it(`rejects empty targets before rendering ${format}`, async () => {
+      const directory = await mkdtemp(join(tmpdir(), "connector-impact-cli-"));
+      const path = join(directory, "empty-target.json");
+      await writeFile(path, JSON.stringify({ connector: "crm", action: "update_contact", target: [] }));
+
+      await assert.rejects(
+        run("node", ["dist/src/cli.js", "preview", path, "--format", format]),
+        (error: { code: number; stdout: string; stderr: string }) => {
+          assert.equal(error.code, 1);
+          assert.equal(error.stdout, "");
+          assert.equal(error.stderr, 'Manifest field "target" must contain at least one target\n');
+          return true;
+        }
+      );
+    });
+  }
+
   for (const [field, value, expectedField] of [
     ["connector", "   ", "connector"],
     ["action", "\t", "action"],

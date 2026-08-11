@@ -52,6 +52,9 @@ function requiredString(value: unknown, field: string): string {
 function requiredTarget(value: unknown): ConnectorManifest["target"] {
   if (typeof value === "string") return requiredString(value, "target");
   if (Array.isArray(value)) {
+    if (value.length === 0) {
+      throw new Error('Manifest field "target" must contain at least one target');
+    }
     return value.map((item, index) => requiredString(item, `target[${index}]`));
   }
   if (value && typeof value === "object") return value as Record<string, unknown>;
