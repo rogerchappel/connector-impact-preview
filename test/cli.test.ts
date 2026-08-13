@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
-import { mkdtemp, writeFile } from "node:fs/promises";
+import { access, mkdtemp, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { basename, join } from "node:path";
 import { describe, it } from "node:test";
 import { promisify } from "node:util";
 
@@ -137,7 +137,47 @@ describe("cli", () => {
         return true;
       }
     );
-    await assert.rejects(import("node:fs/promises").then(({ access }) => access(path)));
+    await assert.rejects(access(path));
+  });
+
+  for (const [label, outputPath] of [
+    ["direct", (path: string) => path],
+    ["normalized", (path: string) => join(path, "..", basename(path))]
+  ] as const) {
+    it(`rejects a ${label} output path collision with the input manifest`, async () => {
+      const directory = await mkdtemp(join(tmpdir(), "connector-impact-cli-"));
+      const manifestPath = join(directory, "manifest.json");
+      const original = JSON.stringify({ connector: "crm", action: "update", target: "c1" });
+      await writeFile(manifestPath, original);
+
+      await assert.rejects(
+        run("node", ["dist/src/cli.js", "preview", manifestPath, "--format", "json", "--out", outputPath(manifestPath)]),
+        (error: { code: number; stdout: string; stderr: string }) => {
+          assert.equal(error.code, 1);
+          assert.equal(error.stdout, "");
+          assert.equal(error.stderr, "Output path must differ from the input manifest\n");
+          return true;
+        }
+      );
+      assert.equal(await readFile(manifestPath, "utf8"), original);
+    });
+  }
+
+  it("writes a preview when the output path differs from the input manifest", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "connector-impact-cli-"));
+    const manifestPath = join(directory, "manifest.json");
+    const outputPath = join(directory, "preview.json");
+    const original = JSON.stringify({ connector: "crm", action: "update", target: "c1" });
+    await writeFile(manifestPath, original);
+
+    const { stdout, stderr } = await run("node", [
+      "dist/src/cli.js", "preview", manifestPath, "--format", "json", "--out", outputPath
+    ]);
+
+    assert.equal(stdout, "");
+    assert.equal(stderr, "");
+    assert.equal(JSON.parse(await readFile(outputPath, "utf8")).connector, "crm");
+    assert.equal(await readFile(manifestPath, "utf8"), original);
   });
 
   it("rejects malformed manifest fields without rendering a preview", async () => {
