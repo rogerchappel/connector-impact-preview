@@ -62,6 +62,10 @@ unknown long or short options, unsupported formats, or options missing their
 values. A flag is never accepted as an option value. Invalid commands are
 fully parsed before a manifest is loaded or an output file is written.
 
+The `--out` path must resolve to a different path than the input manifest.
+Direct and normalized path collisions exit nonzero without changing the
+manifest or creating a preview artifact.
+
 Markdown output keeps manifest-controlled text on one line and escapes Markdown
 punctuation so values cannot introduce headings, lists, links, emphasis, or code
 spans. JSON output preserves the original string values (subject to secret
