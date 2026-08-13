@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { writeFile } from "node:fs/promises";
+import { resolve } from "node:path";
 
 import { loadManifest, previewManifest, renderJson, renderMarkdown } from "./index.js";
 import type { OutputFormat } from "./types.js";
@@ -22,6 +23,9 @@ async function main(): Promise<void> {
     usage(process.stderr);
     process.exitCode = 2;
     return;
+  }
+  if (args.out && resolve(args.out) === resolve(args.manifest)) {
+    throw new Error("Output path must differ from the input manifest");
   }
   const manifest = await loadManifest(args.manifest);
   const preview = previewManifest(manifest);
