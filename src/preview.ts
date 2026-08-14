@@ -28,9 +28,13 @@ function diffFields(before: Record<string, unknown>, after: Record<string, unkno
     .filter((field) => JSON.stringify(before[field]) !== JSON.stringify(after[field]) || field in payload)
     .map((field) => ({
       field,
-      before: isSecretKey(field) ? "[REDACTED]" : before[field],
-      after: isSecretKey(field) ? "[REDACTED]" : field in after ? after[field] : payload[field]
+      before: redactFieldValue(field, before[field]),
+      after: redactFieldValue(field, field in after ? after[field] : payload[field])
     }));
+}
+
+function redactFieldValue(field: string, value: unknown): unknown {
+  return isSecretKey(field) ? "[REDACTED]" : redactValue(value);
 }
 
 function buildWarnings(manifest: ConnectorManifest, changedFields: FieldChange[]): string[] {
