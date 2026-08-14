@@ -86,6 +86,53 @@ describe("connector impact preview", () => {
     assert.doesNotMatch(rendered, /ghp_secret/);
   });
 
+  it("recursively redacts changed-field values before rendering", () => {
+    const preview = previewManifest({
+      connector: "crm",
+      action: "update",
+      target: "contact-1",
+      before: {
+        profile: {
+          name: "Before Name",
+          apiKey: "synthetic_before_key",
+          channels: [{ label: "primary", authorization: "synthetic_before_authorization" }]
+        }
+      },
+      after: {
+        profile: {
+          name: "After Name",
+          apiKey: "synthetic_after_key",
+          channels: [{ label: "primary", authorization: "synthetic_after_authorization" }]
+        }
+      },
+      payload: {
+        contacts: [{ email: "person@example.com", credential: "synthetic_payload_credential" }]
+      }
+    });
+
+    assert.deepEqual(preview.changedFields, [
+      {
+        field: "contacts",
+        before: undefined,
+        after: [{ email: "person@example.com", credential: "[REDACTED]" }]
+      },
+      {
+        field: "profile",
+        before: {
+          name: "Before Name",
+          apiKey: "[REDACTED]",
+          channels: [{ label: "primary", authorization: "[REDACTED]" }]
+        },
+        after: {
+          name: "After Name",
+          apiKey: "[REDACTED]",
+          channels: [{ label: "primary", authorization: "[REDACTED]" }]
+        }
+      }
+    ]);
+    assert.doesNotMatch(JSON.stringify(preview.changedFields), /synthetic_(before|after|payload)/);
+  });
+
   it("redacts nested secret-like keys from target summaries in every renderer", () => {
     const preview = previewManifest({
       connector: "crm",
