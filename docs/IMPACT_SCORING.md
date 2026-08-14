@@ -16,4 +16,4 @@ Destructive action or broad target. Examples include bulk delete, workspace-wide
 
 ## Redaction
 
-Secret-like keys are redacted in rendered payloads, changed-field output, and target summaries. Target redaction is recursive for nested objects and arrays and happens before broad-target classification. The default key patterns include token, secret, password, api key, authorization, cookie, and credential.
+Secret-like keys are redacted in payloads, changed fields, and target summaries returned by `previewManifest`, before a renderer receives the preview. Redaction is recursive for nested objects and arrays, including every changed field's `before` and `after` values. Target redaction happens before broad-target classification. The default key patterns include token, secret, password, api key, authorization, cookie, and credential.

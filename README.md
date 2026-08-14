@@ -47,6 +47,11 @@ Action classification accepts verb names written with snake case, kebab case,
 spaces, or camel case (for example, `update_contact`, `update-contact`,
 `update contact`, and `updateContact`).
 
+The exported `previewManifest(manifest)` API returns an `ImpactPreview` whose
+`redactedPayload` and `changedFields` values are already safe to inspect before
+rendering. Secret-like keys are redacted recursively inside nested objects and
+arrays in both the `before` and `after` values of every changed field.
+
 The CLI grammar is:
 
 ```text
@@ -98,7 +103,7 @@ CI runs `npm run release:check` on pull requests and pushes to `main`, including
 
 ## Safety Notes
 
-This tool is local-first and non-executing. It never calls connector APIs and never performs the proposed action. Secret-like keys such as `token`, `password`, `apiKey`, `authorization`, and `credential` are redacted from rendered output, including keys nested inside target objects and arrays.
+This tool is local-first and non-executing. It never calls connector APIs and never performs the proposed action. Secret-like keys such as `token`, `password`, `apiKey`, `authorization`, and `credential` are redacted by the preview API and from rendered output, including keys nested inside changed-field values, target objects, and arrays.
 
 ## Limitations
 
