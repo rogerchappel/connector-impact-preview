@@ -38,7 +38,8 @@ rollback:
 ```
 
 `connector` and `action` are non-empty strings. `target` is a non-empty string,
-a non-empty array of non-empty strings, or an object. `payload`, `before`, and `after`
+a non-empty array of non-empty strings, or an object with at least one property.
+`payload`, `before`, and `after`
 are optional objects. `evidence` and `rollback` are optional arrays of non-empty
 strings; use an empty array when there are no notes. Malformed fields are
 rejected instead of being coerced or discarded.
