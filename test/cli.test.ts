@@ -196,18 +196,21 @@ describe("cli", () => {
     );
   });
 
-  for (const format of ["markdown", "json"] as const) {
-    it(`rejects empty targets before rendering ${format}`, async () => {
+  for (const [format, target, message] of [
+    ["markdown", [], 'Manifest field "target" must contain at least one target'],
+    ["json", {}, 'Manifest field "target" must contain at least one target property']
+  ] as const) {
+    it(`rejects an empty ${Array.isArray(target) ? "array" : "object"} target before rendering ${format}`, async () => {
       const directory = await mkdtemp(join(tmpdir(), "connector-impact-cli-"));
       const path = join(directory, "empty-target.json");
-      await writeFile(path, JSON.stringify({ connector: "crm", action: "update_contact", target: [] }));
+      await writeFile(path, JSON.stringify({ connector: "crm", action: "update_contact", target }));
 
       await assert.rejects(
         run("node", ["dist/src/cli.js", "preview", path, "--format", format]),
         (error: { code: number; stdout: string; stderr: string }) => {
           assert.equal(error.code, 1);
           assert.equal(error.stdout, "");
-          assert.equal(error.stderr, 'Manifest field "target" must contain at least one target\n');
+          assert.equal(error.stderr, `${message}\n`);
           return true;
         }
       );
