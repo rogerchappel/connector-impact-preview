@@ -57,6 +57,11 @@ function requiredTarget(value: unknown): ConnectorManifest["target"] {
     }
     return value.map((item, index) => requiredString(item, `target[${index}]`));
   }
-  if (value && typeof value === "object") return value as Record<string, unknown>;
+  if (value && typeof value === "object") {
+    if (Object.keys(value).length === 0) {
+      throw new Error('Manifest field "target" must contain at least one target property');
+    }
+    return value as Record<string, unknown>;
+  }
   throw new Error('Manifest field "target" must be a non-empty string, an array of non-empty strings, or an object');
 }
