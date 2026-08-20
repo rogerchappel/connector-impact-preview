@@ -26,6 +26,26 @@ describe("connector impact preview", () => {
     assert.ok(preview.warnings.includes("missing rollback notes"));
   });
 
+  it("distinguishes named channels from broad channel targets", () => {
+    const base = {
+      connector: "slack",
+      action: "update_topic",
+      payload: { topic: "maintenance" },
+      evidence: ["ticket-123"],
+      rollback: ["restore prior topic"]
+    };
+
+    const narrow = previewManifest({ ...base, target: "channel #ops" });
+    assert.equal(narrow.impact, "low");
+    assert.ok(!narrow.warnings.includes("broad target"));
+
+    for (const target of ["global channel settings", "all channels"]) {
+      const broad = previewManifest({ ...base, target });
+      assert.equal(broad.impact, "high");
+      assert.ok(broad.warnings.includes("broad target"));
+    }
+  });
+
   it("warns when a loaded write action omits both payload and after", async () => {
     const manifest = await loadManifest(fixture("missing-write-data.yaml"));
     const preview = previewManifest(manifest);
