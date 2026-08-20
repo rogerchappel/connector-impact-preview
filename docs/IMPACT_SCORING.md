@@ -4,7 +4,7 @@ Impact scores are deterministic review hints for approval packets.
 
 ## Low
 
-Narrow target, non-destructive action, evidence present, rollback notes present, and few changed fields.
+Narrow target, non-destructive action, evidence present, rollback notes present, and few changed fields. A named channel such as `channel #ops` is narrow.
 
 ## Medium
 
@@ -12,7 +12,7 @@ Missing evidence, missing rollback notes, a write action without a payload or af
 
 ## High
 
-Destructive action or broad target. Examples include bulk delete, workspace-wide changes, organization-wide updates, or global channel actions.
+Destructive action or broad target. Examples include bulk delete, workspace-wide changes, organization-wide updates, global channel actions, or actions targeting all channels.
 
 ## Redaction
 
