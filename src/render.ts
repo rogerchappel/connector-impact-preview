@@ -6,6 +6,9 @@ export function renderJson(preview: ImpactPreview): string {
 }
 
 export function renderMarkdown(preview: ImpactPreview): string {
+  const payload = JSON.stringify(preview.redactedPayload, null, 2);
+  const payloadFence = markdownFence(payload);
+
   return [
     "# Connector Impact Preview",
     "",
@@ -19,9 +22,9 @@ export function renderMarkdown(preview: ImpactPreview): string {
     preview.changedFields.length ? preview.changedFields.map((change) => `- ${markdownText(change.field)}: ${markdownValue(change.before)} -> ${markdownValue(change.after)}`).join("\n") : "- None detected",
     "",
     "## Payload",
-    "```json",
-    JSON.stringify(preview.redactedPayload, null, 2),
-    "```",
+    `${payloadFence}json`,
+    payload,
+    payloadFence,
     "",
     "## Evidence",
     preview.evidence.length ? preview.evidence.map((item) => `- ${markdownText(item)}`).join("\n") : "- Missing",
@@ -32,6 +35,11 @@ export function renderMarkdown(preview: ImpactPreview): string {
     "## Warnings",
     preview.warnings.length ? preview.warnings.map((item) => `- ${markdownText(item)}`).join("\n") : "- None"
   ].join("\n");
+}
+
+function markdownFence(value: string): string {
+  const longestRun = Math.max(0, ...Array.from(value.matchAll(/`+/g), (match) => match[0].length));
+  return "`".repeat(Math.max(3, longestRun + 1));
 }
 
 function markdownValue(value: unknown): string {
