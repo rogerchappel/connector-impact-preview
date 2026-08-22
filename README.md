@@ -74,8 +74,9 @@ manifest or creating a preview artifact.
 
 Markdown output keeps manifest-controlled text on one line and escapes Markdown
 punctuation so values cannot introduce headings, lists, links, emphasis, or code
-spans. JSON output preserves the original string values (subject to secret
-redaction).
+spans. The structured payload uses a code fence longer than any backtick run in
+the payload, so payload values cannot close or create a fence. JSON output
+preserves the original string values (subject to secret redaction).
 
 ## What It Reports
 

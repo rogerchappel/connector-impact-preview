@@ -70,6 +70,29 @@ describe("cli", () => {
     assert.match(stdout, /crm\\` \\#\\# Injected/);
   });
 
+  it("keeps payload backticks inside a longer markdown fence", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "connector-impact-cli-"));
+    const path = join(directory, "payload-fence.json");
+    await writeFile(path, JSON.stringify({
+      connector: "crm",
+      action: "update",
+      target: "contact-1",
+      payload: {
+        body: "Example uses ``` fenced code",
+        credentials: { token: "synthetic_secret" }
+      }
+    }));
+
+    const { stdout } = await run("node", ["dist/src/cli.js", "preview", path, "--format", "markdown"]);
+
+    assert.match(stdout, /^````json$/m);
+    assert.equal(stdout.match(/^````$/gm)?.length, 1);
+    assert.doesNotMatch(stdout, /^```(?:[^`]|$)/gm);
+    assert.match(stdout, /Example uses ``` fenced code/);
+    assert.match(stdout, /\[REDACTED\]/);
+    assert.doesNotMatch(stdout, /synthetic_secret/);
+  });
+
   for (const format of ["markdown", "json"]) {
     it(`redacts nested target secrets from ${format} output`, async () => {
       const { stdout } = await run("node", ["dist/src/cli.js", "preview", "fixtures/secret-target.yaml", "--format", format]);
