@@ -214,6 +214,27 @@ describe("connector impact preview", () => {
     assert.match(markdown, /line\\` \\#\\# Injected \\- item \\\*bold\\\*/);
   });
 
+  it("uses a payload fence longer than manifest-controlled backtick runs", () => {
+    const preview = previewManifest({
+      connector: "crm",
+      action: "update",
+      target: "contact-1",
+      payload: {
+        body: "Example uses ``` fenced code",
+        nested: { token: "synthetic_secret" }
+      }
+    });
+
+    const markdown = renderMarkdown(preview);
+
+    assert.match(markdown, /^````json$/m);
+    assert.equal(markdown.match(/^````$/gm)?.length, 1);
+    assert.doesNotMatch(markdown, /^```(?:[^`]|$)/gm);
+    assert.match(markdown, /Example uses ``` fenced code/);
+    assert.match(markdown, /\[REDACTED\]/);
+    assert.doesNotMatch(markdown, /synthetic_secret/);
+  });
+
   it("does not normalize JSON output", () => {
     const connector = "crm`\n## Kept in JSON";
     const json = renderJson(previewManifest({
@@ -223,6 +244,20 @@ describe("connector impact preview", () => {
     }));
 
     assert.equal(JSON.parse(json).connector, connector);
+  });
+
+  it("preserves payload fence delimiters in redacted JSON output", () => {
+    const body = "Example uses ``` fenced code";
+    const json = renderJson(previewManifest({
+      connector: "crm",
+      action: "update",
+      target: "contact-1",
+      payload: { body, password: "synthetic_secret" }
+    }));
+
+    const rendered = JSON.parse(json);
+    assert.equal(rendered.redactedPayload.body, body);
+    assert.equal(rendered.redactedPayload.password, "[REDACTED]");
   });
 
   for (const [field, value, shape] of [
