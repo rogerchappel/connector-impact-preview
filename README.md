@@ -70,7 +70,8 @@ fully parsed before a manifest is loaded or an output file is written.
 
 The `--out` path must resolve to a different path than the input manifest.
 Direct and normalized path collisions exit nonzero without changing the
-manifest or creating a preview artifact.
+manifest or creating a preview artifact. Missing parent directories in an
+otherwise valid output path are created automatically.
 
 Markdown output keeps manifest-controlled text on one line and escapes Markdown
 punctuation so values cannot introduce headings, lists, links, emphasis, or code

@@ -29,6 +29,7 @@ with a concise error. `--help`, `-h`, and `help` are standalone forms and cannot
 be combined with a command, manifest, or options. Extra positional arguments,
 unknown short options, and flags supplied as option values are also rejected
 before any output file is written.
+Missing parent directories supplied through `--out` are created automatically.
 
 ## Validation
 

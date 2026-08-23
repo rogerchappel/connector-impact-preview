@@ -10,7 +10,8 @@
     ".": "./dist/src/index.js"
   },
   "files": [
-    "dist",
+    "dist/src",
+    "fixtures",
     "README.md",
     "SKILL.md",
     "docs",
