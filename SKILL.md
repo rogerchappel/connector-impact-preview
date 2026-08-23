@@ -20,8 +20,8 @@ No approval is needed to preview a local manifest. Executing the connector actio
 ## Examples
 
 ```bash
-connector-impact preview fixtures/crm-update.yaml --format markdown
-connector-impact preview fixtures/github-comment.json --format json --out tmp/impact.json
+./node_modules/.bin/connector-impact preview node_modules/connector-impact-preview/fixtures/crm-update.yaml --format markdown
+./node_modules/.bin/connector-impact preview node_modules/connector-impact-preview/fixtures/github-comment.json --format json --out tmp/impact.json
 ```
 
 Unknown options, unsupported formats, and options without values exit nonzero
