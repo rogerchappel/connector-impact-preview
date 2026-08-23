@@ -203,6 +203,21 @@ describe("cli", () => {
     assert.equal(await readFile(manifestPath, "utf8"), original);
   });
 
+  it("creates missing output parent directories", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "connector-impact-cli-"));
+    const manifestPath = join(directory, "manifest.json");
+    const outputPath = join(directory, "tmp", "nested", "impact.json");
+    await writeFile(manifestPath, JSON.stringify({ connector: "crm", action: "update", target: "c1" }));
+
+    const { stdout, stderr } = await run("node", [
+      "dist/src/cli.js", "preview", manifestPath, "--format", "json", "--out", outputPath
+    ]);
+
+    assert.equal(stdout, "");
+    assert.equal(stderr, "");
+    assert.equal(JSON.parse(await readFile(outputPath, "utf8")).connector, "crm");
+  });
+
   it("rejects malformed manifest fields without rendering a preview", async () => {
     const directory = await mkdtemp(join(tmpdir(), "connector-impact-cli-"));
     const path = join(directory, "invalid.json");
