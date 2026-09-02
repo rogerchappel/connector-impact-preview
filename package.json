@@ -24,12 +24,13 @@
     "build": "tsc -p tsconfig.json",
     "check": "tsc -p tsconfig.json --noEmit",
     "lint": "npm run check",
+    "support:check": "node scripts/check-node-support.mjs",
     "test": "node --test dist/**/*.test.js",
     "pretest": "npm run build",
     "smoke": "npm run build && node dist/src/cli.js preview fixtures/crm-update.yaml --format markdown && node dist/src/cli.js preview fixtures/workspace-delete.yaml --format json",
     "validate": "bash scripts/validate.sh",
     "package:smoke": "npm run build && node scripts/package-smoke.mjs",
-    "release:check": "npm run validate && npm run package:smoke"
+    "release:check": "npm run support:check && npm run validate && npm run package:smoke"
   },
   "keywords": [
     "connectors",
@@ -46,6 +47,9 @@
     "url": "https://github.com/rogerchappel/connector-impact-preview/issues"
   },
   "homepage": "https://github.com/rogerchappel/connector-impact-preview#readme",
+  "engines": {
+    "node": ">=22 <25"
+  },
   "dependencies": {
     "yaml": "^2.8.0"
   },
