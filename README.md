@@ -48,7 +48,11 @@ rejected instead of being coerced or discarded.
 
 Action classification accepts verb names written with snake case, kebab case,
 spaces, or camel case (for example, `update_contact`, `update-contact`,
-`update contact`, and `updateContact`).
+`update contact`, and `updateContact`). Common writes including `upsert` and
+`publish` produce a medium-impact warning when both `payload` and `after` are
+omitted. Destructive verbs including `purge` produce a high-impact warning.
+Named targets such as `team alpha` remain narrow, while `team` and genuinely
+broad forms such as `all teams` are high impact.
 
 The exported `previewManifest(manifest)` API returns an `ImpactPreview` whose
 `redactedPayload` and `changedFields` values are already safe to inspect before
@@ -89,7 +93,7 @@ preserves the original string values (subject to secret redaction).
 - changed fields
 - redacted payload
 - evidence and rollback notes
-- warnings for broad targets, destructive actions, missing evidence, and missing rollback notes
+- warnings for broad targets, destructive actions, writes without payload/after data, missing evidence, and missing rollback notes
 
 ## Verification
 

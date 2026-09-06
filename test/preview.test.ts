@@ -72,6 +72,30 @@ describe("connector impact preview", () => {
     });
   }
 
+  for (const action of [
+    "upsert_contact",
+    "upsert-contact",
+    "upsert contact",
+    "upsertContact",
+    "publish_message",
+    "publish-message",
+    "publish message",
+    "publishMessage"
+  ]) {
+    it(`recognizes ${action} as a write action`, () => {
+      const preview = previewManifest({
+        connector: "crm",
+        action,
+        target: "contact-1",
+        evidence: ["Confirmed request"],
+        rollback: ["Restore the previous state"]
+      });
+
+      assert.equal(preview.impact, "medium");
+      assert.ok(preview.warnings.includes("write action without payload or after snapshot"));
+    });
+  }
+
   for (const action of ["delete_contact", "delete-contact", "delete contact", "deleteContact"]) {
     it(`recognizes ${action} as a destructive action`, () => {
       const preview = previewManifest({
@@ -86,6 +110,41 @@ describe("connector impact preview", () => {
       assert.ok(preview.warnings.includes("destructive action"));
     });
   }
+
+  for (const action of ["purge_records", "purge-records", "purge records", "purgeRecords"]) {
+    it(`recognizes ${action} as a destructive action`, () => {
+      const preview = previewManifest({
+        connector: "crm",
+        action,
+        target: "records-2026",
+        evidence: ["Confirmed request"],
+        rollback: ["Restore the purged records"]
+      });
+
+      assert.equal(preview.impact, "high");
+      assert.ok(preview.warnings.includes("destructive action"));
+    });
+  }
+
+  it("distinguishes named teams from genuinely broad team targets", () => {
+    const base = {
+      connector: "directory",
+      action: "update_members",
+      payload: { status: "active" },
+      evidence: ["Confirmed request"],
+      rollback: ["Restore the previous membership"]
+    };
+
+    const narrow = previewManifest({ ...base, target: "team alpha" });
+    assert.equal(narrow.impact, "low");
+    assert.ok(!narrow.warnings.includes("broad target"));
+
+    for (const target of ["all teams", "team"]) {
+      const broad = previewManifest({ ...base, target });
+      assert.equal(broad.impact, "high");
+      assert.ok(broad.warnings.includes("broad target"));
+    }
+  });
 
   it("distinguishes explicitly empty payload and after from omitted fields", async () => {
     const manifest = await loadManifest(fixture("empty-write-data.yaml"));
