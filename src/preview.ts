@@ -1,9 +1,9 @@
 import { isSecretKey, redactValue } from "./redact.js";
 import type { ConnectorManifest, FieldChange, ImpactLevel, ImpactPreview } from "./types.js";
 
-const destructiveAction = /\b(delete|remove|archive|merge|close|deactivate|disable|overwrite|bulk)\b/i;
-const writeAction = /\b(create|update|post|send|comment|assign|change|edit|write)\b/i;
-const broadTarget = /\b(all|workspace|organization|org|everyone|bulk|team|global)\b/i;
+const destructiveAction = /\b(delete|remove|archive|merge|close|deactivate|disable|overwrite|purge|bulk)\b/i;
+const writeAction = /\b(create|update|upsert|publish|post|send|comment|assign|change|edit|write)\b/i;
+const broadTarget = /\b(all|every|workspace|organization|org|everyone|bulk|global)\b|\bteam\b(?=["']?\s*(?:[,}]|$))/i;
 
 export function previewManifest(manifest: ConnectorManifest): ImpactPreview {
   const changedFields = diffFields(manifest.before ?? {}, manifest.after ?? {}, manifest.payload ?? {});
