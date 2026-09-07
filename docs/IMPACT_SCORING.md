@@ -8,7 +8,9 @@ Narrow target, non-destructive action, evidence present, rollback notes present,
 
 ## Medium
 
-Missing evidence, missing rollback notes, a write action without a payload or after snapshot, or more than three changed fields. Write verbs include create, update, upsert, publish, post, send, comment, assign, change, edit, and write.
+Missing evidence, missing rollback notes, a write action without a payload or after snapshot, or more than three changed fields. Previews with four or more changed fields include a `many changed fields` warning that explains this rating. Write verbs include create, update, upsert, publish, post, send, comment, assign, change, edit, and write.
+
+Changed-field comparison is semantic for JSON-like values: object property order is ignored, while nested value changes and array order changes remain significant.
 
 ## High
 
