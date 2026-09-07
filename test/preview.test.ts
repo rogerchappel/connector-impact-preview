@@ -157,6 +157,59 @@ describe("connector impact preview", () => {
     assert.ok(!preview.warnings.includes("write action without payload or after snapshot"));
   });
 
+  it("compares nested object values independently of property order", () => {
+    const preview = previewManifest({
+      connector: "crm",
+      action: "update_contact",
+      target: "contact-1",
+      before: { profile: { name: "Ada", preferences: { locale: "en", theme: "dark" } } },
+      after: { profile: { preferences: { theme: "dark", locale: "en" }, name: "Ada" } },
+      evidence: ["Confirmed request"],
+      rollback: ["Restore the previous profile"]
+    });
+
+    assert.deepEqual(preview.changedFields, []);
+  });
+
+  it("detects genuine nested changes and array reordering", () => {
+    const preview = previewManifest({
+      connector: "crm",
+      action: "update_contact",
+      target: "contact-1",
+      before: {
+        profile: { name: "Ada", preferences: { locale: "en" } },
+        roles: ["admin", "editor"]
+      },
+      after: {
+        profile: { name: "Ada", preferences: { locale: "fr" } },
+        roles: ["editor", "admin"]
+      },
+      evidence: ["Confirmed request"],
+      rollback: ["Restore the previous profile"]
+    });
+
+    assert.deepEqual(preview.changedFields.map((change) => change.field), ["profile", "roles"]);
+  });
+
+  it("warns when more than three fields change", () => {
+    const base = {
+      connector: "crm",
+      action: "update_contact",
+      target: "contact-1",
+      before: { a: 0, b: 0, c: 0, d: 0 },
+      evidence: ["Confirmed request"],
+      rollback: ["Restore the previous contact"]
+    };
+
+    const three = previewManifest({ ...base, after: { a: 1, b: 1, c: 1, d: 0 } });
+    assert.equal(three.impact, "low");
+    assert.ok(!three.warnings.includes("many changed fields"));
+
+    const four = previewManifest({ ...base, after: { a: 1, b: 1, c: 1, d: 1 } });
+    assert.equal(four.impact, "medium");
+    assert.ok(four.warnings.includes("many changed fields"));
+  });
+
   it("redacts secret-like keys in json output", async () => {
     const manifest = await loadManifest(fixture("github-comment.json"));
     const preview = previewManifest(manifest);
