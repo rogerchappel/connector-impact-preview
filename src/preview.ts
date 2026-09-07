@@ -25,12 +25,30 @@ export function previewManifest(manifest: ConnectorManifest): ImpactPreview {
 function diffFields(before: Record<string, unknown>, after: Record<string, unknown>, payload: Record<string, unknown>): FieldChange[] {
   const fields = [...new Set([...Object.keys(before), ...Object.keys(after), ...Object.keys(payload)])].sort();
   return fields
-    .filter((field) => JSON.stringify(before[field]) !== JSON.stringify(after[field]) || field in payload)
+    .filter((field) => !jsonValuesEqual(before[field], after[field]) || field in payload)
     .map((field) => ({
       field,
       before: redactFieldValue(field, before[field]),
       after: redactFieldValue(field, field in after ? after[field] : payload[field])
     }));
+}
+
+function jsonValuesEqual(left: unknown, right: unknown): boolean {
+  if (Object.is(left, right)) return true;
+  if (Array.isArray(left) || Array.isArray(right)) {
+    return Array.isArray(left)
+      && Array.isArray(right)
+      && left.length === right.length
+      && left.every((value, index) => jsonValuesEqual(value, right[index]));
+  }
+  if (left === null || right === null || typeof left !== "object" || typeof right !== "object") return false;
+
+  const leftRecord = left as Record<string, unknown>;
+  const rightRecord = right as Record<string, unknown>;
+  const leftKeys = Object.keys(leftRecord).sort();
+  const rightKeys = Object.keys(rightRecord).sort();
+  return leftKeys.length === rightKeys.length
+    && leftKeys.every((key, index) => key === rightKeys[index] && jsonValuesEqual(leftRecord[key], rightRecord[key]));
 }
 
 function redactFieldValue(field: string, value: unknown): unknown {
@@ -43,7 +61,7 @@ function buildWarnings(manifest: ConnectorManifest, changedFields: FieldChange[]
   if (!manifest.rollback?.length) warnings.push("missing rollback notes");
   if (destructiveAction.test(normalizeAction(manifest.action))) warnings.push("destructive action");
   if (broadTarget.test(summarizeTarget(manifest.target))) warnings.push("broad target");
-  if (changedFields.length > 5) warnings.push("many changed fields");
+  if (changedFields.length > 3) warnings.push("many changed fields");
   if (writeAction.test(normalizeAction(manifest.action)) && !manifest.payload && !manifest.after) warnings.push("write action without payload or after snapshot");
   return warnings;
 }
