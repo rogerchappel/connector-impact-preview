@@ -46,6 +46,14 @@ are optional objects. `evidence` and `rollback` are optional arrays of non-empty
 strings; use an empty array when there are no notes. Malformed fields are
 rejected instead of being coerced or discarded.
 
+When a field appears in both `payload` and `after`, `payload` is the proposed
+value used by `changedFields` and impact classification. Matching values are
+reported once. If they disagree, the preview still shows the payload proposal
+and adds a field-specific warning that the `after` snapshot is inconsistent.
+Consequently, an `after` value equal to `before` cannot hide a different value
+proposed by `payload`, and unchanged resolved values are not reported as
+changes.
+
 Action classification accepts verb names written with snake case, kebab case,
 spaces, or camel case (for example, `update_contact`, `update-contact`,
 `update contact`, and `updateContact`). Common writes including `upsert` and
