@@ -6,8 +6,8 @@ const writeAction = /\b(create|update|upsert|publish|post|send|comment|assign|ch
 const broadTarget = /\b(all|every|workspace|organization|org|everyone|bulk|global)\b|\bteam\b(?=["']?\s*(?:[,}]|$))/i;
 
 export function previewManifest(manifest: ConnectorManifest): ImpactPreview {
-  const changedFields = diffFields(manifest.before ?? {}, manifest.after ?? {}, manifest.payload ?? {});
-  const warnings = buildWarnings(manifest, changedFields);
+  const { changedFields, inconsistentFields } = diffFields(manifest.before ?? {}, manifest.after ?? {}, manifest.payload ?? {});
+  const warnings = buildWarnings(manifest, changedFields, inconsistentFields);
   return {
     connector: manifest.connector,
     action: manifest.action,
@@ -22,15 +22,24 @@ export function previewManifest(manifest: ConnectorManifest): ImpactPreview {
   };
 }
 
-function diffFields(before: Record<string, unknown>, after: Record<string, unknown>, payload: Record<string, unknown>): FieldChange[] {
+function diffFields(
+  before: Record<string, unknown>,
+  after: Record<string, unknown>,
+  payload: Record<string, unknown>
+): { changedFields: FieldChange[]; inconsistentFields: string[] } {
   const fields = [...new Set([...Object.keys(before), ...Object.keys(after), ...Object.keys(payload)])].sort();
-  return fields
-    .filter((field) => !jsonValuesEqual(before[field], after[field]) || field in payload)
+  const proposedValue = (field: string): unknown => field in payload ? payload[field] : after[field];
+  const changedFields = fields
+    .filter((field) => !jsonValuesEqual(before[field], proposedValue(field)))
     .map((field) => ({
       field,
       before: redactFieldValue(field, before[field]),
-      after: redactFieldValue(field, field in after ? after[field] : payload[field])
+      after: redactFieldValue(field, proposedValue(field))
     }));
+  const inconsistentFields = fields.filter((field) =>
+    field in payload && field in after && !jsonValuesEqual(payload[field], after[field])
+  );
+  return { changedFields, inconsistentFields };
 }
 
 function jsonValuesEqual(left: unknown, right: unknown): boolean {
@@ -55,7 +64,7 @@ function redactFieldValue(field: string, value: unknown): unknown {
   return isSecretKey(field) ? "[REDACTED]" : redactValue(value);
 }
 
-function buildWarnings(manifest: ConnectorManifest, changedFields: FieldChange[]): string[] {
+function buildWarnings(manifest: ConnectorManifest, changedFields: FieldChange[], inconsistentFields: string[]): string[] {
   const warnings: string[] = [];
   if (!manifest.evidence?.length) warnings.push("missing evidence");
   if (!manifest.rollback?.length) warnings.push("missing rollback notes");
@@ -63,6 +72,9 @@ function buildWarnings(manifest: ConnectorManifest, changedFields: FieldChange[]
   if (broadTarget.test(summarizeTarget(manifest.target))) warnings.push("broad target");
   if (changedFields.length > 3) warnings.push("many changed fields");
   if (writeAction.test(normalizeAction(manifest.action)) && !manifest.payload && !manifest.after) warnings.push("write action without payload or after snapshot");
+  for (const field of inconsistentFields) {
+    warnings.push(`after snapshot disagrees with payload for field ${JSON.stringify(field)}; preview uses payload value`);
+  }
   return warnings;
 }
 
