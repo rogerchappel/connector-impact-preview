@@ -171,6 +171,41 @@ describe("connector impact preview", () => {
     assert.deepEqual(preview.changedFields, []);
   });
 
+  it("uses one consistent value when payload and after agree", () => {
+    const preview = previewManifest({
+      connector: "crm", action: "update_contact", target: "contact-1",
+      before: { stage: "lead" }, after: { stage: "qualified" }, payload: { stage: "qualified" },
+      evidence: ["Confirmed request"], rollback: ["Restore lead"]
+    });
+
+    assert.deepEqual(preview.changedFields, [{ field: "stage", before: "lead", after: "qualified" }]);
+    assert.deepEqual(preview.warnings, []);
+    assert.equal(preview.impact, "low");
+  });
+
+  it("uses payload as the proposed value and warns when after disagrees", () => {
+    const preview = previewManifest({
+      connector: "crm", action: "update_contact", target: "contact-1",
+      before: { stage: "lead" }, after: { stage: "customer" }, payload: { stage: "qualified" },
+      evidence: ["Confirmed request"], rollback: ["Restore lead"]
+    });
+
+    assert.deepEqual(preview.changedFields, [{ field: "stage", before: "lead", after: "qualified" }]);
+    assert.ok(preview.warnings.includes('after snapshot disagrees with payload for field "stage"; preview uses payload value'));
+    assert.equal(preview.impact, "low");
+  });
+
+  it("does not report an unchanged after value when payload proposes a change", () => {
+    const preview = previewManifest({
+      connector: "crm", action: "update_contact", target: "contact-1",
+      before: { stage: "lead" }, after: { stage: "lead" }, payload: { stage: "qualified" },
+      evidence: ["Confirmed request"], rollback: ["Restore lead"]
+    });
+
+    assert.deepEqual(preview.changedFields, [{ field: "stage", before: "lead", after: "qualified" }]);
+    assert.ok(preview.warnings.some((warning) => warning.includes('field "stage"')));
+  });
+
   it("detects genuine nested changes and array reordering", () => {
     const preview = previewManifest({
       connector: "crm",

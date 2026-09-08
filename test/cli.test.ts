@@ -51,6 +51,21 @@ describe("cli", () => {
     assert.equal(JSON.parse(stdout).execution, "out-of-scope");
   });
 
+  it("renders the payload proposal when after disagrees", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "connector-impact-cli-"));
+    const path = join(directory, "disagreement.json");
+    await writeFile(path, JSON.stringify({
+      connector: "crm", action: "update_contact", target: "contact-1",
+      before: { stage: "lead" }, after: { stage: "lead" }, payload: { stage: "qualified" },
+      evidence: ["Confirmed request"], rollback: ["Restore lead"]
+    }));
+
+    const { stdout } = await run("node", ["dist/src/cli.js", "preview", path, "--format", "json"]);
+    const preview = JSON.parse(stdout);
+    assert.deepEqual(preview.changedFields, [{ field: "stage", before: "lead", after: "qualified" }]);
+    assert.ok(preview.warnings.includes('after snapshot disagrees with payload for field "stage"; preview uses payload value'));
+  });
+
   it("normalizes markdown structure characters from a manifest", async () => {
     const directory = await mkdtemp(join(tmpdir(), "connector-impact-cli-"));
     const path = join(directory, "markdown.json");
