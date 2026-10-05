@@ -464,3 +464,24 @@ describe("connector impact preview", () => {
     });
   }
 });
+
+  it("rejects non-object manifest roots from JSON and YAML fixtures", async () => {
+    for (const [name, contents] of [
+      ["root.json", '["not", "a manifest"]'],
+      ["root.yaml", "- not\n- a manifest\n"]
+    ]) {
+      const directory = await mkdtemp(join(tmpdir(), "connector-impact-root-"));
+      const path = join(directory, name);
+      await writeFile(path, contents);
+      await assert.rejects(loadManifest(path), new Error("Manifest must be an object"));
+    }
+  });
+
+  it("accepts representative valid JSON and YAML manifest fixtures", async () => {
+    for (const name of ["github-comment.json", "crm-update.yaml"]) {
+      const manifest = await loadManifest(fixture(name));
+      assert.equal(manifest.connector.length > 0, true);
+      assert.equal(manifest.action.length > 0, true);
+      assert.ok(manifest.target);
+    }
+  });
