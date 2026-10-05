@@ -12,7 +12,7 @@ export async function loadManifest(path: string): Promise<ConnectorManifest> {
 }
 
 function validateManifest(value: unknown): ConnectorManifest {
-  if (!value || typeof value !== "object") throw new Error("Manifest must be an object");
+  if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error("Manifest must be an object");
   const manifest = value as Partial<ConnectorManifest>;
   return {
     connector: requiredString(manifest.connector, "connector"),
