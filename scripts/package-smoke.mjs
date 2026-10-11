@@ -38,6 +38,27 @@ try {
     cwd: directory,
     stdio: "pipe"
   });
+  const installedPackage = join(directory, "node_modules", "connector-impact-preview");
+  const manifest = JSON.parse(readFileSync(join(installedPackage, "package.json"), "utf8"));
+  for (const [label, target] of [
+    ["bin connector-impact", manifest.bin?.["connector-impact"]],
+    ["export .", manifest.exports?.["."]]
+  ]) {
+    const packagePath = typeof target === "string" ? target.replace(/^\.\//, "") : "";
+    if (!packagePath || !files.has(packagePath)) {
+      throw new Error(`Package smoke failed; ${label} target is absent from tarball: ${target ?? "<missing>"}`);
+    }
+    try {
+      readFileSync(join(installedPackage, packagePath));
+    } catch {
+      throw new Error(`Package smoke failed; ${label} target is missing after install: ${target}`);
+    }
+  }
+  execFileSync(process.execPath, [
+    "--input-type=module",
+    "-e",
+    `const api = await import(${JSON.stringify(join(installedPackage, manifest.exports["."]))}); if (typeof api.loadManifest !== "function" || typeof api.previewManifest !== "function") throw new Error("Public export is missing expected API functions");`
+  ], { cwd: directory, stdio: "pipe" });
   const cli = join(directory, "node_modules", ".bin", "connector-impact");
   const fixtureRoot = join(directory, "node_modules", "connector-impact-preview", "fixtures");
   execFileSync(cli, ["preview", join(fixtureRoot, "crm-update.yaml"), "--format", "markdown"], {
