@@ -18,7 +18,8 @@
     "LICENSE",
     "SECURITY.md",
     "CONTRIBUTING.md",
-    "CHANGELOG.md"
+    "CHANGELOG.md",
+    "scripts/package-smoke.mjs"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
