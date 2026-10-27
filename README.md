@@ -2,7 +2,7 @@
 
 Turn a proposed connector action into a local, reviewable impact summary before asking for approval.
 
-Requires Node.js 22 or 24. Both supported release lines are exercised by CI.
+Requires Node.js 22, 23, or 24. All supported release lines are exercised by CI.
 
 ## Quickstart
 
