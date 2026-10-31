@@ -28,7 +28,9 @@ function diffFields(
   payload: Record<string, unknown>
 ): { changedFields: FieldChange[]; inconsistentFields: string[] } {
   const fields = [...new Set([...Object.keys(before), ...Object.keys(after), ...Object.keys(payload)])].sort();
-  const proposedValue = (field: string): unknown => field in payload ? payload[field] : after[field];
+  const hasPayloadField = (field: string): boolean => Object.hasOwn(payload, field);
+  const hasAfterField = (field: string): boolean => Object.hasOwn(after, field);
+  const proposedValue = (field: string): unknown => hasPayloadField(field) ? payload[field] : after[field];
   const changedFields = fields
     .filter((field) => !jsonValuesEqual(before[field], proposedValue(field)))
     .map((field) => ({
@@ -37,7 +39,7 @@ function diffFields(
       after: redactFieldValue(field, proposedValue(field))
     }));
   const inconsistentFields = fields.filter((field) =>
-    field in payload && field in after && !jsonValuesEqual(payload[field], after[field])
+    hasPayloadField(field) && hasAfterField(field) && !jsonValuesEqual(payload[field], after[field])
   );
   return { changedFields, inconsistentFields };
 }

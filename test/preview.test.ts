@@ -206,6 +206,31 @@ describe("connector impact preview", () => {
     assert.ok(preview.warnings.some((warning) => warning.includes('field "stage"')));
   });
 
+  it("ignores inherited property names in payload and after snapshots", () => {
+    const payload = Object.assign(Object.create({ toString: "inherited" }), { name: "Ada" });
+    const after = Object.assign(Object.create({ constructor: "inherited" }), { name: "Ada" });
+    const preview = previewManifest({
+      connector: "crm", action: "update_contact", target: "contact-1",
+      before: {}, after, payload,
+      evidence: ["Confirmed request"], rollback: ["Restore prior contact"]
+    });
+
+    assert.deepEqual(preview.changedFields, [{ field: "name", before: undefined, after: "Ada" }]);
+    assert.deepEqual(preview.warnings, []);
+  });
+
+  it("uses own payload fields rather than inherited names when choosing proposed values", () => {
+    const payload = Object.create({ stage: "inherited" }) as Record<string, unknown>;
+    const preview = previewManifest({
+      connector: "crm", action: "update_contact", target: "contact-1",
+      before: { stage: "lead" }, after: { stage: "qualified" }, payload,
+      evidence: ["Confirmed request"], rollback: ["Restore lead"]
+    });
+
+    assert.deepEqual(preview.changedFields, [{ field: "stage", before: "lead", after: "qualified" }]);
+    assert.deepEqual(preview.warnings, []);
+  });
+
   it("detects genuine nested changes and array reordering", () => {
     const preview = previewManifest({
       connector: "crm",
