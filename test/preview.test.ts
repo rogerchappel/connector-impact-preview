@@ -46,6 +46,20 @@ describe("connector impact preview", () => {
     }
   });
 
+  it("elevates write actions with no payload or after even when evidence and rollback exist", () => {
+    const preview = previewManifest({
+      connector: "crm",
+      action: "update",
+      target: "contact-1",
+      evidence: ["Confirmed request"],
+      rollback: ["Restore the previous contact"]
+    });
+
+    assert.equal(preview.impact, "medium");
+    assert.deepEqual(preview.changedFields, []);
+    assert.ok(preview.warnings.includes("write action without payload or after snapshot"));
+  });
+
   it("warns when a loaded write action omits both payload and after", async () => {
     const manifest = await loadManifest(fixture("missing-write-data.yaml"));
     const preview = previewManifest(manifest);
