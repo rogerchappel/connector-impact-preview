@@ -1,0 +1,31 @@
+{
+  "connector": "crm",
+  "action": "update_contact",
+  "targetSummary": "type=contact, id=c_123",
+  "impact": "low",
+  "changedFields": [
+    {
+      "field": "apiKey",
+      "before": "[REDACTED]",
+      "after": "[REDACTED]"
+    },
+    {
+      "field": "stage",
+      "before": "lead",
+      "after": "qualified"
+    }
+  ],
+  "redactedPayload": {
+    "stage": "qualified",
+    "apiKey": "[REDACTED]"
+  },
+  "evidence": [
+    "Call notes mention budget and project owner.",
+    "Email thread confirms requested follow-up."
+  ],
+  "rollback": [
+    "Set stage back to lead if the qualification note is rejected."
+  ],
+  "warnings": [],
+  "execution": "out-of-scope"
+}
