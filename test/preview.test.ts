@@ -369,6 +369,21 @@ describe("connector impact preview", () => {
     }
   });
 
+  it("renders nested object target values as deterministic readable JSON", () => {
+    const preview = previewManifest({
+      connector: "crm",
+      action: "update",
+      target: { team: "alpha", filter: { region: "west", active: true } },
+      payload: { stage: "qualified" },
+      evidence: ["Synthetic fixture"],
+      rollback: ["Restore the prior stage"]
+    });
+
+    assert.equal(preview.targetSummary, 'team=alpha, filter={"region":"west","active":true}');
+    assert.match(renderMarkdown(preview), /filter=\\\{"region":"west","active":true\\\}/);
+    assert.equal(renderJson(preview).includes('[object Object]'), false);
+  });
+
   it("renders markdown approval evidence", async () => {
     const manifest = await loadManifest(fixture("slack-message.yaml"));
     const markdown = renderMarkdown(previewManifest(manifest));
