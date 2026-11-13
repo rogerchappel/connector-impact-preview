@@ -284,6 +284,21 @@ describe("connector impact preview", () => {
     assert.ok(four.warnings.includes("many changed fields"));
   });
 
+  it("redacts recognizable credential strings in ordinary fields and arrays", () => {
+    const token = "ghp_" + "a".repeat(36);
+    const preview = previewManifest({
+      connector: "crm",
+      action: "update",
+      target: "contact-1",
+      payload: { note: `using ${token}`, entries: [token, { message: `Bearer ${token}` }] }
+    });
+    const json = renderJson(preview);
+    assert.doesNotMatch(json, new RegExp(token));
+    assert.match(json, /\[REDACTED\]/);
+    assert.equal(preview.redactedPayload.note, "using [REDACTED]");
+    assert.deepEqual(preview.redactedPayload.entries, ["[REDACTED]", { message: "Bearer [REDACTED]" }]);
+  });
+
   it("redacts secret-like keys in json output", async () => {
     const manifest = await loadManifest(fixture("github-comment.json"));
     const preview = previewManifest(manifest);
