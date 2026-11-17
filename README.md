@@ -7,7 +7,7 @@ Requires Node.js 22, 23, or 24. All supported release lines are exercised by CI.
 ## Quickstart
 
 ```bash
-npm install
+npm ci
 npm run build
 node dist/src/cli.js --help
 node dist/src/cli.js preview fixtures/crm-update.yaml --format markdown
