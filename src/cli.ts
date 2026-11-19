@@ -2,7 +2,7 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 
-import { loadManifest, previewManifest, renderJson, renderMarkdown } from "./index.js";
+import { loadManifest, previewManifest, renderJson, renderMarkdown, renderSarif } from "./index.js";
 import type { OutputFormat } from "./types.js";
 
 interface Args {
@@ -29,7 +29,7 @@ async function main(): Promise<void> {
   }
   const manifest = await loadManifest(args.manifest);
   const preview = previewManifest(manifest);
-  const output = args.format === "json" ? renderJson(preview) : renderMarkdown(preview);
+  const output = args.format === "json" ? renderJson(preview) : args.format === "sarif" ? renderSarif(preview) : renderMarkdown(preview);
   if (args.out) {
     await mkdir(dirname(resolve(args.out)), { recursive: true });
     await writeFile(args.out, output);
@@ -64,12 +64,12 @@ function optionValue(argv: string[], index: number, option: string): string {
 }
 
 function parseFormat(value: string | undefined): OutputFormat {
-  if (value === "json" || value === "markdown") return value;
+  if (value === "json" || value === "markdown" || value === "sarif") return value;
   throw new Error(`Unsupported format: ${value ?? ""}`);
 }
 
 function usage(stream: NodeJS.WriteStream): void {
-  stream.write("Usage: connector-impact preview <manifest.json|yaml> [--format markdown|json] [--out file]\n");
+  stream.write("Usage: connector-impact preview <manifest.json|yaml> [--format markdown|json|sarif] [--out file]\n");
 }
 
 main().catch((error: unknown) => {

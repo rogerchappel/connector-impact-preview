@@ -44,6 +44,14 @@ describe("cli", () => {
     });
   }
 
+  it("renders SARIF from a fixture manifest", async () => {
+    const { stdout } = await run("node", ["dist/src/cli.js", "preview", "fixtures/crm-update.yaml", "--format", "sarif"]);
+    const sarif = JSON.parse(stdout);
+    assert.equal(sarif.version, "2.1.0");
+    assert.ok(sarif.runs[0].results.length > 0);
+    assert.ok(sarif.runs[0].results[0].locations[0].physicalLocation.region.startLine > 0);
+  });
+
   it("renders redacted json from a fixture manifest", async () => {
     const { stdout } = await run("node", ["dist/src/cli.js", "preview", "fixtures/github-comment.json", "--format", "json"]);
     assert.match(stdout, /\[REDACTED\]/);

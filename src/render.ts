@@ -53,3 +53,27 @@ function markdownText(value: string): string {
     .replace(/([`*_{}\[\]()<>#+\-.!|])/g, "\\$1")
     .replace(/\\\[REDACTED\\\]/g, "[REDACTED]");
 }
+
+
+export function renderSarif(preview: ImpactPreview): string {
+  const level = preview.impact === "high" ? "error" : preview.impact === "medium" ? "warning" : "note";
+  const results = preview.changedFields.map((change) => ({
+    ruleId: "connector-impact.changed-field",
+    level,
+    message: { text: `Field ${change.field} changes from ${JSON.stringify(change.before)} to ${JSON.stringify(change.after)}.` },
+    locations: [{
+      physicalLocation: {
+        artifactLocation: { uri: "connector-impact-preview" },
+        region: { startLine: 1, startColumn: 1 }
+      }
+    }]
+  }));
+  return `${JSON.stringify({
+    $schema: "https://json.schemastore.org/sarif-2.1.0.json",
+    version: "2.1.0",
+    runs: [{
+      tool: { driver: { name: "connector-impact-preview", rules: [{ id: "connector-impact.changed-field", shortDescription: { text: "Connector impact field change" } }] } },
+      results
+    }]
+  }, null, 2)}\n`;
+}
