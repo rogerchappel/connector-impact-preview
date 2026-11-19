@@ -4,11 +4,27 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, it } from "node:test";
 
-import { loadManifest, previewManifest, renderJson, renderMarkdown } from "../src/index.js";
+import { loadManifest, previewManifest, renderJson, renderMarkdown, renderSarif } from "../src/index.js";
 
 const fixture = (name: string): string => new URL(`fixtures/${name}`, `file://${process.cwd()}/`).pathname;
 
 describe("connector impact preview", () => {
+  it("renders SARIF results with locations and impact severities", () => {
+    const preview = previewManifest({
+      connector: "crm", action: "update_contact", target: "contact-1",
+      before: { stage: "lead", name: "Ada" }, after: { stage: "qualified", name: "Ada" },
+      evidence: ["ticket-1"], rollback: ["restore lead"]
+    });
+    const sarif = JSON.parse(renderSarif(preview));
+    assert.equal(sarif.version, "2.1.0");
+    assert.equal(sarif.runs[0].results.length, 1);
+    assert.equal(sarif.runs[0].results[0].level, "note");
+    assert.equal(sarif.runs[0].results[0].message.text.includes("stage"), true);
+    assert.deepEqual(sarif.runs[0].results[0].locations[0].physicalLocation.region, { startLine: 1, startColumn: 1 });
+    const high = previewManifest({ connector: "crm", action: "delete_contact", target: "all contacts", before: { id: "c1" }, after: { id: null } });
+    assert.equal(JSON.parse(renderSarif(high)).runs[0].results[0].level, "error");
+  });
+
   it("loads yaml manifests and classifies narrow updates as low impact", async () => {
     const manifest = await loadManifest(fixture("crm-update.yaml"));
     const preview = previewManifest(manifest);

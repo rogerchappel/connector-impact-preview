@@ -19,6 +19,14 @@ JSON output is available for approval packets or audit evidence:
 node dist/src/cli.js preview fixtures/github-comment.json --format json --out tmp/impact.json
 ```
 
+SARIF output reports each changed field as a result, with a source location and
+severity mapped from the overall impact (`low` → `note`, `medium` → `warning`,
+`high` → `error`):
+
+```bash
+node dist/src/cli.js preview fixtures/crm-update.yaml --format sarif --out tmp/impact.sarif
+```
+
 ## Manifest Shape
 
 ```yaml
@@ -70,7 +78,7 @@ arrays in both the `before` and `after` values of every changed field.
 The CLI grammar is:
 
 ```text
-connector-impact preview <manifest.json|yaml> [--format markdown|json] [--out file]
+connector-impact preview <manifest.json|yaml> [--format markdown|json|sarif] [--out file]
 connector-impact --help
 connector-impact -h
 connector-impact help

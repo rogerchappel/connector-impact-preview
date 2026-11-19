@@ -1,4 +1,4 @@
-export type OutputFormat = "markdown" | "json";
+export type OutputFormat = "markdown" | "json" | "sarif";
 export type ImpactLevel = "low" | "medium" | "high";
 
 export interface ConnectorManifest {
