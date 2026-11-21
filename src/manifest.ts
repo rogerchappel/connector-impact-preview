@@ -11,6 +11,51 @@ export async function loadManifest(path: string): Promise<ConnectorManifest> {
   return validateManifest(parsed);
 }
 
+export interface ManifestSchemaProfile {
+  /** Connector identifiers to which this profile applies, compared exactly. */
+  connectors: readonly string[];
+  /** Required top-level manifest fields for matching connectors. */
+  requiredFields: readonly string[];
+}
+
+/** Opt-in connector-family validation; generic loading remains unchanged. */
+export async function loadManifestWithProfile(
+  path: string,
+  profile: ManifestSchemaProfile
+): Promise<ConnectorManifest> {
+  validateProfile(profile);
+  const manifest = await loadManifest(path);
+  if (profile.connectors.includes(manifest.connector)) {
+    for (const field of profile.requiredFields) {
+      if (!Object.hasOwn(manifest, field) || manifest[field as keyof ConnectorManifest] === undefined) {
+        throw new Error(`Manifest for connector "${manifest.connector}" requires field "${field}"`);
+      }
+    }
+  }
+  return manifest;
+}
+
+const manifestFields = new Set([
+  "connector", "action", "target", "payload", "before", "after", "evidence", "rollback"
+]);
+
+function validateProfile(profile: ManifestSchemaProfile): void {
+  if (!profile || typeof profile !== "object" || Array.isArray(profile)) {
+    throw new Error("Schema profile must be an object");
+  }
+  for (const [name, values] of [["connectors", profile.connectors], ["requiredFields", profile.requiredFields]] as const) {
+    if (!Array.isArray(values) || values.length === 0 || values.some(value => typeof value !== "string" || value.trim() === "")) {
+      throw new Error(`Schema profile "${name}" must be a non-empty array of non-empty strings`);
+    }
+    if (new Set(values).size !== values.length) {
+      throw new Error(`Schema profile "${name}" must not contain duplicates`);
+    }
+  }
+  for (const field of profile.requiredFields) {
+    if (!manifestFields.has(field)) throw new Error(`Schema profile field "${field}" is not a supported manifest field`);
+  }
+}
+
 function validateManifest(value: unknown): ConnectorManifest {
   if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error("Manifest must be an object");
   const manifest = value as Partial<ConnectorManifest>;

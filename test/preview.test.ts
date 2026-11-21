@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, it } from "node:test";
 
-import { loadManifest, previewManifest, renderJson, renderMarkdown, renderSarif } from "../src/index.js";
+import { loadManifest, loadManifestWithProfile, previewManifest, renderJson, renderMarkdown, renderSarif } from "../src/index.js";
 
 const fixture = (name: string): string => new URL(`fixtures/${name}`, `file://${process.cwd()}/`).pathname;
 
@@ -570,3 +570,25 @@ describe("connector impact preview", () => {
       assert.ok(manifest.target);
     }
   });
+
+describe("opt-in schema profiles", () => {
+  it("enforces family requirements only for matching connectors", async () => {
+    const file = fixture("github-comment.json");
+    const profile = { connectors: ["github"], requiredFields: ["after"] } as const;
+    await assert.rejects(loadManifestWithProfile(file, profile), /requires field "after"/);
+    assert.equal((await loadManifestWithProfile(file, { connectors: ["other"], requiredFields: ["after"] } )).connector, "github");
+    assert.equal((await loadManifest(file)).connector, "github");
+  });
+
+  it("rejects malformed profile contracts", async () => {
+    const file = fixture("crm-update.yaml");
+    for (const profile of [
+      { connectors: [], requiredFields: ["evidence"] },
+      { connectors: ["crm"], requiredFields: ["unknown"] },
+      { connectors: ["crm", "crm"], requiredFields: ["evidence"] },
+      { connectors: ["crm"], requiredFields: [""] }
+    ]) {
+      await assert.rejects(loadManifestWithProfile(file, profile as never), /Schema profile/);
+    }
+  });
+});
