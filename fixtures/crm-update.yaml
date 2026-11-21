@@ -13,5 +13,6 @@ after:
 evidence:
   - "Call notes mention budget and project owner."
   - "Email thread confirms requested follow-up."
+  - "Set stage back to lead if the qualification note is rejected."
 rollback:
   - "Set stage back to lead if the qualification note is rejected."
